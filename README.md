@@ -26,7 +26,7 @@ Useful scripts included with VObject:
 VObject was originally developed in concert with the Open Source Application 
 Foundation's _Chandler_ project by Jeffrey Harris.  Maintenance was later
 passed to [Sameen Karim](https://github.com/skarim) and 
-[Will Percy](https://github.com/wpercy) at [Eventable](https://github.com/eventable).
+[Will Percival](https://github.com/wpercy) at [Eventable](https://github.com/eventable).
 After several years of inactivity, the project was revived under a dedicated
 GitHub organization, with new volunteers.
 
