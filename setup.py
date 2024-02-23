@@ -28,7 +28,7 @@ from setuptools import setup, find_packages
 doclines = (__doc__ or '').splitlines()
 
 setup(name = "vobject",
-      version = "0.9.6.1",
+      version = "0.9.7",
       author = "Jeffrey Harris",
       author_email = "jeffrey@osafoundation.org",
       maintainer = "David Arnold",
@@ -36,7 +36,7 @@ setup(name = "vobject",
       license = "Apache",
       zip_safe = True,
       url = "http://py-vobject.github.io/vobject/",
-      download_url = 'https://github.com/py-vobject/vobject/tarball/0.9.6.1',
+      download_url = 'https://github.com/py-vobject/vobject/tarball/0.9.7',
       bugtrack_url = "https://github.com/py-vobject/vobject/issues",
       entry_points = {
             'console_scripts': [
