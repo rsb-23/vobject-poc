@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>VObject by eventable</title>
+    <title>VObject</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -13,18 +13,18 @@
     <section class="page-header">
       <h1 class="project-name">VObject</h1>
       <h2 class="project-tagline">A full-featured Python package for parsing and creating iCalendar and vCard files</h2>
-      <a href="https://github.com/eventable/vobject" class="btn">View on GitHub</a>
-      <a href="https://github.com/eventable/vobject/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/eventable/vobject/tarball/master" class="btn">Download .tar.gz</a>
+      <a href="https://github.com/py-vobject/vobject" class="btn">View on GitHub</a>
+      <a href="https://github.com/py-vobject/vobject/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/py-vobject/vobject/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
       <h1>
 <a id="about-vobject" class="anchor" href="#about-vobject" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>About VObject</h1>
 
-<p>VObject is intended to be a full-featured Python package for parsing and generating vCard and vCalendar files. It was originally developed in concert with the Open Source Application Foundation's Chandler project by Jeffrey Harris. Many thanks to <a href="https://github.com/eventable/vobject/blob/master/ACKNOWLEDGEMENTS.txt">all the contributors</a> for their dedication and support. The project is currently being maintained by <a href="https://github.com/eventable">Eventable</a> and <a href="https://github.com/skarim">Sameen Karim</a>.</p>
+<p>VObject is intended to be a full-featured Python package for parsing and generating vCard and vCalendar files. It was originally developed in concert with the Open Source Application Foundation's Chandler project by Jeffrey Harris. Many thanks to <a href="https://github.com/py-vobject/vobject/blob/master/ACKNOWLEDGEMENTS.txt">all the contributors</a> for their dedication and support. The project is currently being maintained by the <a href="https://github.com/py-vobject">py-vobject</a> organization on GitHub</a>.</p>
 
-<p>Currently, iCalendar files are supported and well tested. vCard 3.0 files are supported, and all data should be imported, but only a few components are understood in a sophisticated way. The <a href="http://calendarserver.org/">Calendar Server</a> team has added VAVAILABILITY support to VObject's iCalendar parsing. Please report bugs and issues directly on <a href="https://github.com/eventable/vobject/issues">GitHub</a>.</p>
+<p>Currently, iCalendar files are supported and well tested. vCard 3.0 files are supported, and all data should be imported, but only a few components are understood in a sophisticated way. The <a href="http://calendarserver.org/">Calendar Server</a> team has added VAVAILABILITY support to VObject's iCalendar parsing. Please report bugs and issues directly on <a href="https://github.com/py-vobject/vobject/issues">GitHub</a>.</p>
 
 <p>VObject is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a>. <a href="http://www.apache.org/licenses/LICENSE-2.0.html"><img src="https://img.shields.io/pypi/l/vobject.svg" alt="License"></a></p>
 
@@ -32,9 +32,9 @@
 
 <ul>
 <li>
-<a href="https://github.com/eventable/vobject/blob/master/vobject/ics_diff.py">ics_diff</a>: order is irrelevant in iCalendar files, return a diff of meaningful changes between icalendar files</li>
+<a href="https://github.com/py-vobject/vobject/blob/master/vobject/ics_diff.py">ics_diff</a>: order is irrelevant in iCalendar files, return a diff of meaningful changes between icalendar files</li>
 <li>
-<a href="https://github.com/eventable/vobject/blob/master/vobject/change_tz.py">change_tz</a>: Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones PyICU supports. Requires <a href="https://pypi.python.org/pypi/PyICU/">PyICU</a>.</li>
+<a href="https://github.com/py-vobject/vobject/blob/master/vobject/change_tz.py">change_tz</a>: Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones PyICU supports. Requires <a href="https://pypi.python.org/pypi/PyICU/">PyICU</a>.</li>
 </ul>
 
 <h1>
@@ -54,7 +54,7 @@
 <p>VObject requires Python 2.7 or higher, along with the <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> packages.</p>
 
 <h1>
-<a id="running-tests-" class="anchor" href="#running-tests-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running tests <a href="https://travis-ci.org/eventable/vobject"><img src="https://travis-ci.org/eventable/vobject.svg?branch=master" alt="Build Status"></a>
+<a id="running-tests-" class="anchor" href="#running-tests-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Running tests <a href="https://travis-ci.org/py-vobject/vobject"><img src="https://travis-ci.org/py-vobject/vobject.svg?branch=master" alt="Build Status"></a>
 </h1>
 
 <p>To run all tests, use:</p>
@@ -253,7 +253,7 @@ datetime.datetime(2006, 2, 16, 0, 0, tzinfo=tzutc())
     params for  EMAIL:
        TYPE ['INTERNET']
     FN: Jeffrey Harris
-    N:  Jeffrey  Harris 
+    N:  Jeffrey  Harris
 </code></pre>
 
 <h4>
@@ -339,7 +339,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="7-july-2018" class="anchor" href="#7-july-2018" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>7 July 2018</h3>
 
-<p><strong>vobject 0.9.6</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.6">view</a>).</p>
+<p><strong>vobject 0.9.6</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.6">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.org/project/python-dateutil/">dateutil</a> and <a href="https://pypi.org/project/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -363,7 +363,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="29-june-2017" class="anchor" href="#29-june-2017" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>29 June 2017</h3>
 
-<p><strong>vobject 0.9.5</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.5">view</a>).</p>
+<p><strong>vobject 0.9.5</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.5">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -385,7 +385,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="22-january-2017" class="anchor" href="#22-january-2017" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>22 January 2017</h3>
 
-<p><strong>vobject 0.9.4.1</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.4.1">view</a>).</p>
+<p><strong>vobject 0.9.4.1</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.4.1">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -401,7 +401,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="20-january-2017" class="anchor" href="#20-january-2017" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>20 January 2017</h3>
 
-<p><strong>vobject 0.9.4</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.4">view</a>).</p>
+<p><strong>vobject 0.9.4</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.4">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -420,7 +420,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="26-august-2016" class="anchor" href="#26-august-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>26 August 2016</h3>
 
-<p><strong>vobject 0.9.3</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.3">view</a>).</p>
+<p><strong>vobject 0.9.3</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.3">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -440,7 +440,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="13-march-2016" class="anchor" href="#13-march-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>13 March 2016</h3>
 
-<p><strong>vobject 0.9.2</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.2">view</a>).</p>
+<p><strong>vobject 0.9.2</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.2">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is required.</p>
 
@@ -457,7 +457,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="16-february-2016" class="anchor" href="#16-february-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>16 February 2016</h3>
 
-<p><strong>vobject 0.9.1</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.1">view</a>).</p>
+<p><strong>vobject 0.9.1</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.1">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is now required.</p>
 
@@ -473,7 +473,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="3-february-2016" class="anchor" href="#3-february-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3 February 2016</h3>
 
-<p><strong>vobject 0.9.0</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.9.0">view</a>).</p>
+<p><strong>vobject 0.9.0</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.9.0">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="https://pypi.python.org/pypi/python-dateutil/">dateutil 2.4.0</a> and <a href="https://pypi.python.org/pypi/six">six</a> are required. Python 2.7 or higher is now required.</p>
 
@@ -493,7 +493,7 @@ When dealing with multi-value properties, the getting and setting of values happ
 <h3>
 <a id="28-january-2016" class="anchor" href="#28-january-2016" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>28 January 2016</h3>
 
-<p><strong>vobject 0.8.2</strong> released (<a href="https://github.com/eventable/vobject/releases/tag/0.8.2">view</a>).</p>
+<p><strong>vobject 0.8.2</strong> released (<a href="https://github.com/py-vobject/vobject/releases/tag/0.8.2">view</a>).</p>
 
 <p>To install, use <code>pip install vobject</code>, or download the archive and untar, run python setup.py install. Tests can be run via python setup.py test. <a href="http://labix.org/python-dateutil#head-2f49784d6b27bae60cde1cff6a535663cf87497b">dateutil</a> 1.1 or later is required. Python 2.4 is also required.</p>
 
@@ -996,13 +996,13 @@ When dealing with multi-value properties, the getting and setting of values happ
 </ul>
 
       <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/eventable/vobject">VObject</a> is maintained by <a href="https://github.com/eventable">eventable</a>.</span>
+        <span class="site-footer-owner"><a href="https://github.com/py-vobject/vobject">VObject</a> is maintained by the <a href="https://github.com/py-vobject">py-vobject</a> organization.</span>
 
         <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
 
     </section>
 
-  
+
   </body>
 </html>

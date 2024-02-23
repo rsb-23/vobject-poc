@@ -19,7 +19,7 @@ Recent changes
        implementations
 
 For older changes, see
-   - http://eventable.github.io/vobject/#release-history or
+   - http://py-vobject.github.io/vobject/#release-history or
    - http://vobject.skyhouseconsulting.com/history.html
 """
 
@@ -31,13 +31,13 @@ setup(name = "vobject",
       version = "0.9.6.1",
       author = "Jeffrey Harris",
       author_email = "jeffrey@osafoundation.org",
-      maintainer = "Sameen Karim",
-      maintainer_email="sameen@eventable.com",
+      maintainer = "David Arnold",
+      maintainer_email="davida@pobox.com",
       license = "Apache",
       zip_safe = True,
-      url = "http://eventable.github.io/vobject/",
-      download_url = 'https://github.com/eventable/vobject/tarball/0.9.6.1',
-      bugtrack_url = "https://github.com/eventable/vobject/issues",
+      url = "http://py-vobject.github.io/vobject/",
+      download_url = 'https://github.com/py-vobject/vobject/tarball/0.9.6.1',
+      bugtrack_url = "https://github.com/py-vobject/vobject/issues",
       entry_points = {
             'console_scripts': [
                   'ics_diff = vobject.ics_diff:main',

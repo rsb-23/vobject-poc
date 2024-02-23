@@ -1,16 +1,40 @@
-# VObject [![PyPI version](https://badge.fury.io/py/vobject.svg)](https://pypi.python.org/pypi/vobject) [![PyPI downloads](https://img.shields.io/pypi/dm/vobject.svg)](https://pypi.python.org/pypi/vobject) [![Build Status](https://travis-ci.org/eventable/vobject.svg?branch=master)](https://travis-ci.org/eventable/vobject) [![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![Code Issues](https://www.quantifiedcode.com/api/v1/project/bb995082e4d24119956445829b1e960c/badge.svg)](https://www.quantifiedcode.com/app/project/bb995082e4d24119956445829b1e960c)
+# VObject 
+[![PyPI version](https://badge.fury.io/py/vobject.svg)](https://pypi.python.org/pypi/vobject)
+[![PyPI downloads](https://img.shields.io/pypi/dm/vobject.svg)](https://pypi.python.org/pypi/vobject)
+[![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-VObject is intended to be a full-featured Python package for parsing and generating vCard and vCalendar files. It was originally developed in concert with the Open Source Application Foundation's Chandler project by Jeffrey Harris. Many thanks to [all the contributors](https://github.com/eventable/vobject/blob/master/ACKNOWLEDGEMENTS.txt) for their dedication and support. The project is currently being maintained by [Eventable](https://github.com/eventable) and [Sameen Karim](https://github.com/skarim).
+VObject is intended to be a full-featured Python package for parsing and 
+generating vCard and vCalendar files.
 
-Currently, iCalendar files are supported and well tested. vCard 3.0 files are supported, and all data should be imported, but only a few components are understood in a sophisticated way. The [Calendar Server](http://calendarserver.org/) team has added VAVAILABILITY support to VObject's iCalendar parsing. Please report bugs and issues directly on [GitHub](https://github.com/eventable/vobject/issues).
+Currently, iCalendar files are supported and well tested. vCard 3.0 files are 
+supported, and all data should be imported, but only a few components are 
+understood in a sophisticated way. 
+
+The [Calendar Server](http://calendarserver.org/) team has added VAVAILABILITY 
+support to VObject's iCalendar parsing. 
+
+Please report bugs and issues directly on [GitHub](https://github.com/py-vobject/vobject/issues).
 
 VObject is licensed under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
 
 Useful scripts included with VObject:
 
-* [ics_diff](https://github.com/eventable/vobject/blob/master/vobject/ics_diff.py): order is irrelevant in iCalendar files, return a diff of meaningful changes between icalendar files
-* [change_tz](https://github.com/eventable/vobject/blob/master/vobject/change_tz.py): Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones PyICU supports. Requires [PyICU](https://pypi.python.org/pypi/PyICU/).
+* [ics_diff](https://github.com/py-vobject/vobject/blob/master/vobject/ics_diff.py): order is irrelevant in iCalendar files, return a diff of meaningful changes between icalendar files
+* [change_tz](https://github.com/py-vobject/vobject/blob/master/vobject/change_tz.py): Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones PyICU supports. Requires [PyICU](https://pypi.python.org/pypi/PyICU/).
 
+# History
+VObject was originally developed in concert with the Open Source Application 
+Foundation's _Chandler_ project by Jeffrey Harris.  Maintenance was later
+passed to [Sameen Karim](https://github.com/skarim) and 
+[Will Percy](https://github.com/wpercy) at [Eventable](https://github.com/eventable).
+After several years of inactivity, the project was revived under a dedicated
+GitHub organization, with new volunteers.
+
+**Please note**: the original repository at [eventable/vobject](https://github.com/eventable/vobject/) 
+is _unmaintained_.  This project forked the latest code from that repository, after
+attempts to revive the existing project with new maintainers were unsuccessful.
+
+Many thanks to [all the contributors](https://github.com/py-vobject/vobject/blob/master/ACKNOWLEDGEMENTS.txt) for their dedication and support.
 
 # Installation
 
