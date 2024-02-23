@@ -8,3 +8,5 @@ vobject.egg-info/**/*
 venv/**/*
 .idea/*
 *.sublime-*
+.coverage
+venv*
