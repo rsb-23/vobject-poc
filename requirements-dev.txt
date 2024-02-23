@@ -1,2 +1,4 @@
-python-dateutil >= 2.4.0
 coverage
+python-dateutil >= 2.4.0
+setuptools
+wheel
