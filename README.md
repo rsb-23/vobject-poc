@@ -1,6 +1,7 @@
 # VObject 
 [![PyPI version](https://badge.fury.io/py/vobject.svg)](https://pypi.python.org/pypi/vobject)
 [![PyPI downloads](https://img.shields.io/pypi/dm/vobject.svg)](https://pypi.python.org/pypi/vobject)
+[![Build](https://github.com/py-object/vobject/actions/workflows/test.yml/badge.svg)]
 [![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 VObject is intended to be a full-featured Python package for parsing and 
