@@ -621,6 +621,21 @@ class TestIcalendar(unittest.TestCase):
             'PT20M'
         )
 
+    def test_delta_to_offset(self):
+        """Test deltaToOffset() function."""
+
+        # Sydney
+        delta = datetime.timedelta(hours=10)
+        self.assertEqual(icalendar.deltaToOffset(delta), "+1000")
+
+        # New York
+        delta = datetime.timedelta(hours=-5)
+        self.assertEqual(icalendar.deltaToOffset(delta), "-0500")
+
+        # Adelaide (see https://github.com/py-vobject/vobject/pull/12)
+        delta = datetime.timedelta(hours=9, minutes=30)
+        self.assertEqual(icalendar.deltaToOffset(delta), "+0930")
+
     def test_vtimezone_creation(self):
         """
         Test timezones
