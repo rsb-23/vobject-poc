@@ -5,7 +5,7 @@ Immediate tasks, starting early 2024
 
 - [x] Release 0.9.7 with new web links, suitable acks, etc.
 - [x] Change to use GitHub Actions for CI (replacing TravisCI)
-- [ ] Decide on Python version support policy
+- [x] Decide on Python version support policy
   - Can we stop support for Python 2.7?
   - How early in 3.x do we need to support?
   - What's the policy for the future?
