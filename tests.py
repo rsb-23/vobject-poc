@@ -957,5 +957,22 @@ class TestChangeTZ(unittest.TestCase):
             self.assertEqual(vevent.dtend.value, expected_datepair[1])
 
 
+class TestCompatibility(unittest.TestCase):
+
+    def test_radicale_0816(self):
+        ics_str = get_test_file("radicale-0816.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_0827(self):
+        ics_str = get_test_file("radicale-0827.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+
 if __name__ == '__main__':
     unittest.main()
