@@ -35,9 +35,13 @@ setup(name = "vobject",
       maintainer_email="davida@pobox.com",
       license = "Apache",
       zip_safe = True,
-      url = "http://py-vobject.github.io/",
-      download_url = 'https://github.com/py-vobject/vobject/releases',
-      bugtrack_url = "https://github.com/py-vobject/vobject/issues",
+      project_urls = {
+            "Website": "http://py-vobject.github.io/",
+            "Downloads": "'https://github.com/py-vobject/vobject/releases",
+            "Change Log": "https://github.com/py-vobject/vobject/blob/master/CHANGELOG.md",
+            "Issues": "https://github.com/py-vobject/vobject/issues",
+            "Discussions": "https://github.com/py-vobject/vobject/discussions",
+      },
       entry_points = {
             'console_scripts': [
                   'ics_diff = vobject.ics_diff:main',
