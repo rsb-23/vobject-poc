@@ -32,11 +32,14 @@ sufficient to begin using the package to generate or parse those that you
 will likely encounter in general use.  And it explains the API, with
 examples of common tasks.
 
+
+.. #####################################################################
+
 Quick Start
 ===========
 
 Install ``vobject`` from PyPI using ``pip``, usually into a suitable
-virtual environment.
+virtual environment:
 
 .. code-block:: sh
     :linenos:
@@ -44,7 +47,7 @@ virtual environment.
     pip install vobject
 
 In all code examples in this chapter, we assume that the package has
-been imported
+been imported like this:
 
 .. code-block:: python
     :linenos:
@@ -52,7 +55,8 @@ been imported
     import vobject
 
 You can parse an existing contact (typically ``.vcf``) or calendar
-(typically ``.ics``) file, and get an iterator to the contained objects.
+(typically ``.ics``) file, and get an iterator to the contained
+objects:
 
 .. code-block:: python
     :linenos:
@@ -182,6 +186,9 @@ output).
 Note that ``vobject`` has added the mandatory ``UID`` and ``DTSTAMP``
 components during serialization.
 
+
+.. #####################################################################
+
 Calendars and Cards
 ===================
 
@@ -260,11 +267,15 @@ subsequently adopted by Sameen Karim at Eventable, before passing to
 community maintenance.  The source code is freely available under the
 Apache 2.0 license, and developed in a public repository at GitHub.
 
+
+.. #####################################################################
+
 Installing
 ==========
 
 ``vobject`` is distributed via PyPI_ or from GitHub_.  For most people,
-using ``pip`` and PyPI is easiest and best way to install.
+using ``pip`` and PyPI is easiest and best way to install, but other
+options and reasons to use them are discussed in this chapter.
 
 PyPI
 ----
@@ -282,7 +293,7 @@ Installing using ``pip`` this way will also install ``vobject``'s
 runtime dependencies, so it should be immediately ready for use.
 
 Other Options
------
+-------------
 ``vobject`` is distributed as a universal *wheel*, and should install
 from PyPI using ``pip`` without difficulty in most cases.  There is
 also an *sdist* available from PyPI and GitHub which can be used as a
@@ -304,7 +315,7 @@ is probably not useful in the majority of cases, but it might be
 useful to archive the source code for auditing or similar purposes.
 
 Installing a wheel
-.....
+~~~~~~~~~~~~~~~~~~
 If you've downloaded a *wheel* file (it should have a ``.whl`` suffix),
 you can install it using ``pip``:
 
@@ -319,7 +330,7 @@ without access to PyPI if the required dependencies are already
 installed.
 
 Installing an sdist (source distribution)
-.....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 A Python *sdist* (source distribution) is a tar file (with extension
 ``.tar.gz``) produced as part of making a Python package.  It is very
 easily confused with the source *code* distribution, because the names
@@ -337,7 +348,7 @@ You can download the *sdist* manually, and then install it with ``pip``:
     $ pip install <sdist-file-name>.tar.gz
 
 Installing from cloned source
-.....
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you want to use a cloned source repository, likely the best way to
 install ``vobject`` is to use ``pip``'s editable install mechanism.
 
@@ -356,8 +367,8 @@ the ``-e`` parameter).  An editable install directly uses the files in
 your checkout area, including any local modifications you've made at
 the time you imported the package.
 
-Installing with setup.py
-.....
+Installing with setup.py (Deprecated)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 There should be no need to do this: use ``pip`` instead.  But for
 completeness, you can directly call the ``setup.py`` script to build
 and install the package.
@@ -376,6 +387,9 @@ install --help`` explains them.
 
 This method is not officially supported, and will soon become obsolete
 as the Python ecosystem moves away from ``setup.py``.
+
+
+.. #####################################################################
 
 Importing
 =========
@@ -402,14 +416,17 @@ Or
     card = vCard()
 
 
-.. index:: import, namespace
-
-Note that the ``import \*`` form is explicitly supported, with the exposed
-namespace explicitly managed to contain only the public features of the
-package.
-
 All the example code in this document will use the first form, which is
 strongly recommended.
+
+.. index:: import, namespace
+
+Note that the ``import *`` form is explicitly supported, with the
+exposed namespace controlled to contain only the public features
+of the package.
+
+
+.. #####################################################################
 
 Parsing
 =======
@@ -471,6 +488,9 @@ generator from a stream or string containing multiple vCards objects.
 
     >>> vobject.readComponents(vCardStream).next().email.value
     'jeffrey@osafoundation.org'
+
+
+.. #####################################################################
 
 Creating Objects
 ================
@@ -727,8 +747,19 @@ serializing will add any required computable attributes (like 'VERSION')
 
 
 
+.. #####################################################################
+
 Common Problems
 ===============
+
+- Non-ASCII characters
+- Selecting a serialization format version
+- Validation
+- Flags controlling compatibility with popular application's bugs
+
+
+
+.. #####################################################################
 
 Getting Help
 ============
