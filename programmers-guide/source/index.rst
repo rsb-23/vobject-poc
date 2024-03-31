@@ -35,8 +35,8 @@ examples of common tasks.
 Quick Start
 ===========
 
-Install `vobject` from PyPI using `pip`, usually into a suitable virtual
-environment.
+Install ``vobject`` from PyPI using ``pip``, usually into a suitable
+virtual environment.
 
 .. code-block:: sh
     :linenos:
@@ -51,8 +51,8 @@ been imported
 
     import vobject
 
-You can parse an existing contact (typically `.vcf`) or calendar
-(typically `.ics`) file, and get an iterator to the contained objects.
+You can parse an existing contact (typically ``.vcf``) or calendar
+(typically ``.ics``) file, and get an iterator to the contained objects.
 
 .. code-block:: python
     :linenos:
@@ -61,8 +61,8 @@ You can parse an existing contact (typically `.vcf`) or calendar
         for vo in vobject.readComponents(vo_stream):
             vo.prettyPrint()
 
-If you only want to read a single object, you can use `readOne()` rather
-than `readComponents()`.
+If you only want to read a single object, you can use ``readOne()``
+rather than ``readComponents()``.
 
 Given a Python instance of a vObject, you can then perform many
 operations on it.
@@ -179,7 +179,7 @@ generate its serialized string format:
 is a single string, shown on a single line, in the original interpreter
 output).
 
-Note that `vobject` has added the mandatory `UID` and `DTSTAMP`
+Note that ``vobject`` has added the mandatory ``UID`` and ``DTSTAMP``
 components during serialization.
 
 Calendars and Cards
