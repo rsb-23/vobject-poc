@@ -263,39 +263,119 @@ Apache 2.0 license, and developed in a public repository at GitHub.
 Installing
 ==========
 
-``vobject`` has a few dependencies.  Firstly, it is known to run on
-Python_ 2.7, and 3.7 through to 3.12.  It is not supported on
-Python 3.0 through to 3.6, nor Python 2.6 or earlier.
+``vobject`` is distributed via PyPI_ or from GitHub_.  For most people,
+using ``pip`` and PyPI is easiest and best way to install.
 
-You can install it using pip_::
+PyPI
+----
+You can install ``vobject`` using ``pip``:
+
+.. code-block:: shell
 
     $ pip install vobject
-
 
 It's usually a good idea to install ``vobject`` into a virtual
 environment, to avoid issues with incompatible versions and system-wide
 packaging schemes.
 
-Getting the code
-----------------
+Installing using ``pip`` this way will also install ``vobject``'s
+runtime dependencies, so it should be immediately ready for use.
 
-You can also get the source code from PyPI_ or GitHub_. You can either clone the
-public repository::
+Other Options
+-----
+``vobject`` is distributed as a universal *wheel*, and should install
+from PyPI using ``pip`` without difficulty in most cases.  There is
+also an *sdist* available from PyPI and GitHub which can be used as a
+fallback.
+
+If your development environment cannot access PyPI for some reason,
+then downloading the *wheel* (or *sdist*) from a machine with Internet
+access, and transferring to your development environment would make
+sense.
+
+Alternatively, you can clone the source repository from GitHub using
+git_.  If you're intending to modify ``vobject`` and potentially
+contribute those changes back to the project, you should use the
+``git clone`` method.
+
+Finally, the latest package source code for any release can be
+downloaded from GitHub as either a ``tar`` or ``zip`` file.  This
+is probably not useful in the majority of cases, but it might be
+useful to archive the source code for auditing or similar purposes.
+
+Installing a wheel
+.....
+If you've downloaded a *wheel* file (it should have a ``.whl`` suffix),
+you can install it using ``pip``:
+
+.. code-block:: shell
+
+    $ pip install <wheel-file-name>.whl
+
+Using this method, ``pip`` will automatically try to satisfy the runtime
+dependencies by downloading their wheels in turn, unless they're already
+available in the target (virtual) environment.  But it will work fine
+without access to PyPI if the required dependencies are already
+installed.
+
+Installing an sdist (source distribution)
+.....
+A Python *sdist* (source distribution) is a tar file (with extension
+``.tar.gz``) produced as part of making a Python package.  It is very
+easily confused with the source *code* distribution, because the names
+are basically identical, and both can have the same file extension.
+
+*sdist* files can be downloaded from PyPI or from GitHub, and
+will have a name like ``vobject-0.9.7.tar.gz``.  At GitHub, this file
+is listed with that filename under the release assets and **NOT** as
+the link called *"Source code (tar.gz)"*.
+
+You can download the *sdist* manually, and then install it with ``pip``:
+
+.. code-block:: shell
+
+    $ pip install <sdist-file-name>.tar.gz
+
+Installing from cloned source
+.....
+If you want to use a cloned source repository, likely the best way to
+install ``vobject`` is to use ``pip``'s editable install mechanism.
+
+First, activate the virtual environment to be used for development,
+and install using ``pip`` like:
+
+.. code-block::
 
     $ git clone git://github.com/py-vobject/vobject.git
+    $ cd vobject
+    $ pip install -e .
 
-Download the tarball::
+This will collect, build, and install the dependencies (from PyPI) and
+then install an *editable* version of the ``vobject`` package (that's
+the ``-e`` parameter).  An editable install directly uses the files in
+your checkout area, including any local modifications you've made at
+the time you imported the package.
 
-    $ curl -OL https://github.com/py-vobject/vobject/tarball/master
+Installing with setup.py
+.....
+There should be no need to do this: use ``pip`` instead.  But for
+completeness, you can directly call the ``setup.py`` script to build
+and install the package.
 
-Or, download the zipball::
+Activate the virtual environment to be used for development, and then,
+from the root directory of the source distribution, run:
 
-    $ curl -OL https://github.com/py-vobject/vobject/zipball/master
+.. code-block:: shell
 
-Once you have a copy of the source you can install it into your virtual
-environment's site-packages easily::
+    python setup.py build
+    python setup.py install
 
-    $ python setup.py install
+There are various arguments you can supply for ``setup.py``'s *install*
+command overriding the default install location.  ``python setup.py
+install --help`` explains them.
+
+This method is not officially supported, and will soon become obsolete
+as the Python ecosystem moves away from ``setup.py``.
 
 Importing
 =========
@@ -662,3 +742,4 @@ Getting Help
 .. _Python: http://www.python.org/
 .. _PyPI: https://pypi.org/project/vobject/
 .. _pip: http://www.pip-installer.org/
+.. _git: https://git-scm.com/
