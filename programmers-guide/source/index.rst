@@ -21,9 +21,166 @@ vObject
 
 Introduction
 ============
+`vobject` is a pure-Python package for generating and parsing *vCard*
+and *iCalendar* (aka *vCalendar*) objects, used for sharing and storage
+of personal contacts and calendar events.
+
+It supports Python 2.7 in addition to Python 3.7 or later.
+
+This document gives an overview of the *vCard* and *iCalendar* standards,
+sufficient to begin using the package to generate or parse those that you
+will likely encounter in general use.  And it explains the API, with
+examples of common tasks.
 
 Quick Start
 ===========
+
+Install `vobject` from PyPI using `pip`, usually into a suitable virtual
+environment.
+
+.. code-block:: sh
+    :linenos:
+
+    pip install vobject
+
+In all code examples in this chapter, we assume that the package has
+been imported
+
+.. code-block:: python
+    :linenos:
+
+    import vobject
+
+You can parse an existing contact (typically `.vcf`) or calendar
+(typically `.ics`) file, and get an iterator to the contained objects.
+
+.. code-block:: python
+    :linenos:
+
+    with open("my-cards-file.vcf") as vo_stream:
+        for vo in vobject.readComponents(vo_stream):
+            vo.prettyPrint()
+
+If you only want to read a single object, you can use `readOne()` rather
+than `readComponents()`.
+
+Given a Python instance of a vObject, you can then perform many
+operations on it.
+
+You can get its name:
+
+.. code-block:: python
+    :linenos:
+
+    >>> print(item.name)
+    VCARD
+    >>>
+
+Get its children (if any):
+
+.. code-block:: python
+    :linenos:
+
+    >>> list(item.getChildren())
+
+or get its children in sorted order (alphabetic, except for the required
+children in the standard-specified order):
+
+.. code-block:: python
+    :linenos:
+
+    >>> list(item.getSortedChildren())
+
+When there are no children, an empty list is returned.
+
+A component's children can be accessed through these generators (as
+above), or using a function:
+
+.. code-block:: python
+    :linenos:
+
+    >>> print(item.getChildValue("version")
+    3.0
+    >>>
+
+or using a dictionary (of lists):
+
+.. code-block:: python
+    :linenos:
+
+    >>> print(item.contents["version"][0].value)
+    3.0
+    >>>
+
+or using their names to access them directly as attributes:
+
+.. code-block:: python
+    :linenos:
+
+    >>> print(item.version.value)
+    3.0
+    >>>
+
+If the child has parameters, in addition to its value, they are available
+as a dictionary:
+
+.. code-block:: python
+    :linenos:
+
+    >>> print(item.contents["adr"][0].params)
+    {'TYPE': ['WORK', 'pref']}
+    >>>
+
+Some values are structured types: names (NAME) and addresses (ADR) in
+vCards, for example:
+
+.. code-block:: python
+    :linenos:
+
+    >>> address = item.contents["adr"][0].value
+    >>> print(address.street)
+    42 Main Street
+    >>> print(address.country)
+    USA
+    >>>
+
+vObjects can be created by parsing (as above), by using a helper
+function:
+
+.. code-block:: python
+    :linenos:
+
+    >>> my_card = vobject.vCard()
+
+or using the registry of known component types:
+
+.. code-block:: python
+    :linenos:
+
+    >>> my_todo = vobject.newFromBehavior("vtodo")
+
+Having created, and then populated a vobject as required, you can
+generate its serialized string format:
+
+.. code-block:: python
+    :linenos:
+
+    >>> entry = vobject.newFromBehavior("vjournal")
+    >>> entry.add("summary").value = "Summary"
+    >>> entry.add("description").value = "The whole description"
+    >>>
+    >>> entry.serialize()
+    'BEGIN:VJOURNAL\r\nDESCRIPTION:The whole description\r\n'
+    'DTSTAMP:20240331T013220Z\r\nSUMMARY:Summary\r\n'
+    'UID:20240331T015748Z - 66283@laptop.local\r\nEND:VJOURNAL\r\n'
+    >>>
+
+(the serialized value has been split over several lines for clarity: it
+is a single string, shown on a single line, in the original interpreter
+output).
+
+Note that `vobject` has added the mandatory `UID` and `DTSTAMP`
+components during serialization.
 
 Calendars and Cards
 ===================
@@ -505,5 +662,3 @@ Getting Help
 .. _Python: http://www.python.org/
 .. _PyPI: https://pypi.org/project/vobject/
 .. _pip: http://www.pip-installer.org/
-
-

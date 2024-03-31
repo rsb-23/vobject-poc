@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'vObject'
+project = 'Python vObject'
 copyright = '2024, David Arnold'
 author = 'David Arnold'
 release = '0.9.8'
