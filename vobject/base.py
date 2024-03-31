@@ -1,46 +1,23 @@
 """vobject module for reading vCard and vCalendar files."""
 
-from __future__ import print_function
+from __future__ import annotations
 
 import codecs
+import contextlib
 import copy
-import logging
 import re
 import sys
+from datetime import date
 
 import six
 
-# ------------------------------------ Python 2/3 compatibility challenges  ----
+from .helper import CRLF, DEBUG, SPACEORTAB, backslashEscape, deprecated, indent_str, logger
+
+backslashEscape = backslashEscape  # todo: to be removed later
 # Python 3 no longer has a basestring type, so....
-try:
-    basestring = basestring
-except NameError:
-    basestring = (str, bytes)
+basestring = (str, bytes)
 
-# One more problem ... in python2 the str operator breaks on unicode
-# objects containing non-ascii characters
-try:
-    unicode  # noqa # todo: check this
-
-    def str_(s):
-        """
-        Return byte string with correct encoding
-        """
-        if type(s) is unicode:  # noqa
-            return s.encode("utf-8")
-        else:
-            return str(s)
-
-except NameError:
-
-    def str_(s):
-        """
-        Return string
-        """
-        return s
-
-
-if not isinstance(b"", type("")):
+if not isinstance(b"", type("")):  # sourcery skip
     unicode_type = str
 else:
     unicode_type = unicode  # noqa
@@ -52,10 +29,7 @@ def to_unicode(value):
     If the argument is already a unicode string, it is returned
     unchanged.  Otherwise it must be a byte string and is decoded as utf8.
     """
-    if isinstance(value, unicode_type):
-        return value
-
-    return value.decode("utf-8")
+    return value if isinstance(value, unicode_type) else value.decode("utf-8")
 
 
 def to_basestring(s):
@@ -64,29 +38,7 @@ def to_basestring(s):
     If the argument is already a byte string, it is returned unchanged.
     Otherwise it must be a unicode string and is encoded as utf8.
     """
-    if isinstance(s, bytes):
-        return s
-
-    return s.encode("utf-8")
-
-
-# ------------------------------------ Logging ---------------------------------
-logger = logging.getLogger(__name__)
-if not logging.getLogger().handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(name)s %(levelname)s %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-logger.setLevel(logging.ERROR)  # Log errors
-DEBUG = False  # Don't waste time on debug calls
-
-# ----------------------------------- Constants --------------------------------
-CR = "\r"
-LF = "\n"
-CRLF = CR + LF
-SPACE = " "
-TAB = "\t"
-SPACEORTAB = SPACE + TAB
+    return s if isinstance(s, bytes) else s.encode("utf-8")
 
 
 # --------------------------------- Main classes -------------------------------
@@ -112,6 +64,7 @@ class VBase(object):
 
     def __init__(self, group=None, *args, **kwds):
         super(VBase, self).__init__(*args, **kwds)
+        self.name = None
         self.group = group
         self.behavior = None
         self.parentBehavior = None
@@ -127,9 +80,7 @@ class VBase(object):
         """
         Call the behavior's validate method, or return True.
         """
-        if self.behavior:
-            return self.behavior.validate(self, *args, **kwds)
-        return True
+        return self.behavior.validate(self, *args, **kwds) if self.behavior else True
 
     def getChildren(self):
         """
@@ -156,7 +107,7 @@ class VBase(object):
         if parentBehavior is not None:
             knownChildTup = parentBehavior.knownChildren.get(self.name, None)
             if knownChildTup is not None:
-                behavior = getBehavior(self.name, knownChildTup[2])
+                behavior = get_behavior(self.name, knownChildTup[2])
                 if behavior is not None:
                     self.setBehavior(behavior, cascade)
                     if isinstance(self, ContentLine) and self.encoded:
@@ -186,23 +137,22 @@ class VBase(object):
         """
         if self.isNative or not self.behavior or not self.behavior.hasNative:
             return self
-        else:
-            self_orig = copy.copy(self)
-            try:
-                return self.behavior.transformToNative(self)
-            except Exception as e:
-                # wrap errors in transformation in a ParseError
-                lineNumber = getattr(self, "lineNumber", None)
+        self_orig = copy.copy(self)
+        try:
+            return self.behavior.transformToNative(self)
+        except Exception as e:
+            # wrap errors in transformation in a ParseError
+            lineNumber = getattr(self, "lineNumber", None)
 
-                if isinstance(e, ParseError):
-                    if lineNumber is not None:
-                        e.lineNumber = lineNumber
-                    raise
-                else:
-                    msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    msg = msg + " (" + str(self_orig) + ")"
-                    raise ParseError(msg, lineNumber)
+            if isinstance(e, ParseError):
+                if lineNumber is not None:
+                    e.lineNumber = lineNumber
+                raise
+            else:
+                msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                msg = f"{msg} ({str(self_orig)})"
+                raise ParseError(msg, lineNumber) from e
 
     def transformFromNative(self):
         """
@@ -217,22 +167,21 @@ class VBase(object):
         perfect inverse of transformToNative, in such cases transformFromNative
         should return a new object, not self after modifications.
         """
-        if self.isNative and self.behavior and self.behavior.hasNative:
-            try:
-                return self.behavior.transformFromNative(self)
-            except Exception as e:
-                # wrap errors in transformation in a NativeError
-                lineNumber = getattr(self, "lineNumber", None)
-                if isinstance(e, NativeError):
-                    if lineNumber is not None:
-                        e.lineNumber = lineNumber
-                    raise
-                else:
-                    msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    raise NativeError(msg, lineNumber)
-        else:
+        if not (self.isNative and self.behavior and self.behavior.hasNative):
             return self
+        try:
+            return self.behavior.transformFromNative(self)
+        except Exception as e:
+            # wrap errors in transformation in a NativeError
+            lineNumber = getattr(self, "lineNumber", None)
+            if isinstance(e, NativeError):
+                if lineNumber is not None:
+                    e.lineNumber = lineNumber
+                raise
+            else:
+                msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                raise NativeError(msg, lineNumber) from e
 
     def transformChildrenToNative(self):
         """
@@ -318,7 +267,7 @@ class ContentLine(VBase):
         self.singletonparams = []
         self.isNative = isNative
         self.lineNumber = lineNumber
-        self.value = value
+        self.value: str | date = value
 
         def updateTable(x):
             if len(x) == 1:
@@ -330,27 +279,26 @@ class ContentLine(VBase):
         list(map(updateTable, params))
 
         qp = False
-        if "ENCODING" in self.params:
-            if "QUOTED-PRINTABLE" in self.params["ENCODING"]:
-                qp = True
-                self.params["ENCODING"].remove("QUOTED-PRINTABLE")
-                if len(self.params["ENCODING"]) == 0:
-                    del self.params["ENCODING"]
+        if "ENCODING" in self.params and "QUOTED-PRINTABLE" in self.params["ENCODING"]:
+            qp = True
+            self.params["ENCODING"].remove("QUOTED-PRINTABLE")
+            if len(self.params["ENCODING"]) == 0:
+                del self.params["ENCODING"]
         if "QUOTED-PRINTABLE" in self.singletonparams:
             qp = True
             self.singletonparams.remove("QUOTED-PRINTABLE")
         if qp:
             if "ENCODING" in self.params:
-                self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(
+                self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(  # noqa
                     self.params["ENCODING"]
                 )
             else:
                 if "CHARSET" in self.params:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(
+                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(  # noqa
                         self.params["CHARSET"][0]
                     )
                 else:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode("utf-8")
+                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode("utf-8")  # noqa
 
     @classmethod
     def duplicate(cls, copyit):
@@ -372,7 +320,7 @@ class ContentLine(VBase):
     def __eq__(self, other):
         try:
             return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
-        except Exception:
+        except Exception:  # noqa #todo: exception not clear
             return False
 
     def __getattr__(self, name):
@@ -389,8 +337,8 @@ class ContentLine(VBase):
                 return self.params[toVName(name, 10, True)]
             else:
                 raise AttributeError(name)
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as e:
+            raise AttributeError(name) from e
 
     def __setattr__(self, name, value):
         """
@@ -400,10 +348,7 @@ class ContentLine(VBase):
         which are legal in IANA tokens.
         """
         if name.endswith("_param"):
-            if type(value) is list:
-                self.params[toVName(name, 6, True)] = value
-            else:
-                self.params[toVName(name, 6, True)] = [value]
+            self.params[toVName(name, 6, True)] = value if type(value) is list else [value]
         elif name.endswith("_paramlist"):
             if type(value) is list:
                 self.params[toVName(name, 10, True)] = value
@@ -424,18 +369,15 @@ class ContentLine(VBase):
                 del self.params[toVName(name, 10, True)]
             else:
                 object.__delattr__(self, name)
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as e:
+            raise AttributeError(name) from e
 
     def valueRepr(self):
         """
         Transform the representation of the value
         according to the behavior, if any.
         """
-        v = self.value
-        if self.behavior:
-            v = self.behavior.valueRepr(self)
-        return v
+        return self.behavior.valueRepr(self) if self.behavior else self.value
 
     def __str__(self):
         try:
@@ -450,12 +392,13 @@ class ContentLine(VBase):
         return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
 
     def prettyPrint(self, level=0, tabwidth=3):
-        pre = " " * level * tabwidth
-        print(pre, self.name + ":", self.valueRepr())
+        pre = indent_str(level=level, tabwidth=tabwidth)
+        print(pre, f"{self.name}: {self.valueRepr()}")
         if self.params:
-            print(pre, "params for ", self.name + ":")
+            print(pre, f"params for {self.name}:")
+            pre1 = indent_str(level=level + 1, tabwidth=tabwidth)
             for k in self.params.keys():
-                print(pre + " " * tabwidth, k, self.params[k])
+                print(pre1, k, self.params[k])
 
 
 class Component(VBase):
@@ -538,8 +481,8 @@ class Component(VBase):
                 return self.contents[toVName(name, 5)]
             else:
                 return self.contents[toVName(name)][0]
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as e:
+            raise AttributeError(name) from e
 
     normal_attributes = ["contents", "name", "behavior", "parentBehavior", "group"]
 
@@ -575,18 +518,15 @@ class Component(VBase):
                     del self.contents[toVName(name)]
             else:
                 object.__delattr__(self, name)
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as e:
+            raise AttributeError(name) from e
 
     def getChildValue(self, childName, default=None, childNumber=0):
         """
         Return a child's value (the first, by default), or None.
         """
         child = self.contents.get(toVName(childName))
-        if child is None:
-            return default
-        else:
-            return child[childNumber].value
+        return child[childNumber].value if child else default
 
     def add(self, objOrName, group=None):
         """
@@ -605,8 +545,8 @@ class Component(VBase):
         else:
             name = objOrName.upper()
             try:
-                id = self.behavior.knownChildren[name][2]
-                behavior = getBehavior(name, id)
+                _id = self.behavior.knownChildren[name][2]
+                behavior = get_behavior(name, _id)
                 if behavior.isComponent:
                     obj = Component(name)
                 else:
@@ -616,9 +556,9 @@ class Component(VBase):
                 obj = obj.transformToNative()
             except (KeyError, AttributeError):
                 obj = ContentLine(objOrName, [], "", group)
-            if obj.behavior is None and self.behavior is not None:
-                if isinstance(obj, ContentLine):
-                    obj.behavior = self.behavior.defaultBehavior
+
+            if obj.behavior is None and self.behavior is not None and isinstance(obj, ContentLine):
+                obj.behavior = self.behavior.defaultBehavior
         self.contents.setdefault(obj.name.lower(), []).append(obj)
         return obj
 
@@ -628,20 +568,17 @@ class Component(VBase):
         """
         named = self.contents.get(obj.name.lower())
         if named:
-            try:
+            with contextlib.suppress(ValueError):
                 named.remove(obj)
                 if len(named) == 0:
                     del self.contents[obj.name.lower()]
-            except ValueError:
-                pass
 
     def getChildren(self):
         """
         Return an iterable of all children.
         """
         for objList in self.contents.values():
-            for obj in objList:
-                yield obj
+            yield from objList
 
     def components(self):
         """
@@ -658,7 +595,7 @@ class Component(VBase):
     def sortChildKeys(self):
         try:
             first = [s for s in self.behavior.sortFirst if s in self.contents]
-        except Exception:
+        except AttributeError:
             first = []
         return first + sorted(k for k in self.contents.keys() if k not in first)
 
@@ -669,7 +606,7 @@ class Component(VBase):
         """
         Set behavior if one matches name, versionLine.value.
         """
-        v = getBehavior(self.name, versionLine.value)
+        v = get_behavior(self.name, versionLine.value)
         if v:
             self.setBehavior(v)
 
@@ -706,7 +643,7 @@ class Component(VBase):
         return self.__str__()
 
     def prettyPrint(self, level=0, tabwidth=3):
-        pre = " " * level * tabwidth
+        pre = indent_str(level=level, tabwidth=tabwidth)
         print(pre, self.name)
         if isinstance(self, Component):
             for line in self.getChildren():
@@ -812,9 +749,9 @@ def parseParams(string):
     """
     Parse parameters
     """
-    all = params_re.findall(string)
+    _all = params_re.findall(string)
     allParameters = []
-    for tup in all:
+    for tup in _all:
         paramList = [tup[0]]  # tup looks like (name, valuesString)
         for pair in param_values_re.findall(tup[1]):
             # pair looks like ('', value) or (value, '')
@@ -872,7 +809,7 @@ Line 2 is a new line, it does not start with whitespace.
 """
 
 
-def getLogicalLines(fp, allowQP=True):
+def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
     """
     Iterate through a stream, yielding one logical line at a time.
 
@@ -886,8 +823,8 @@ def getLogicalLines(fp, allowQP=True):
     # We're leaving this test in for awhile, because the unittest was ugly and dumb.
     >>> from six import StringIO
     >>> f=StringIO(testLines)
-    >>> for n, l in enumerate(getLogicalLines(f)):
-    ...     print("Line %s: %s" % (n, l[0]))
+    >>> for _n, l in enumerate(getLogicalLines(f)):
+    ...     print("Line %s: %s" % (_n, l[0]))
     ...
     Line 0: Line 0 text, Line 0 continued.
     Line 1: Line 1;encoding=quoted-printable:this is an evil=
@@ -915,9 +852,8 @@ def getLogicalLines(fp, allowQP=True):
             line = fp.readline()
             if line == "":
                 break
-            else:
-                line = line.rstrip(CRLF)
-                lineNumber += 1
+            line = line.rstrip(CRLF)
+            lineNumber += 1
             if line.rstrip() == "":
                 if logicalLine.tell() > 0:
                     yield logicalLine.getvalue(), lineStartNumber
@@ -952,7 +888,7 @@ def getLogicalLines(fp, allowQP=True):
 
 
 def textLineToContentLine(text, n=None):
-    return ContentLine(*parseLine(text, n), **{"encoded": True, "lineNumber": n})
+    return ContentLine(*parseLine(text, n), encoded=True, lineNumber=n)
 
 
 def dquoteEscape(param):
@@ -961,48 +897,48 @@ def dquoteEscape(param):
     """
     if param.find('"') >= 0:
         raise VObjectError("Double quotes aren't allowed in parameter values.")
-    for char in ",;:":
+    for char in ",;:":  # sourcery skip # temp
         if param.find(char) >= 0:
-            return '"' + param + '"'
+            return f'"{param}"'
     return param
 
 
-def foldOneLine(outbuf, input, lineLength=75):
+def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
     broken across lines
 
     TO-DO: This all seems odd. Is it still needed, especially in python3?
     """
-    if len(input) < lineLength:
+    if len(input_) < lineLength:
         # Optimize for unfolded line case
         try:
-            outbuf.write(bytes(input, "UTF-8"))
-        except Exception:
+            outbuf.write(bytes(input_, "UTF-8"))
+        except Exception:  # noqa #todo: exception not clear
             # fall back on py2 syntax
-            outbuf.write(input)
+            outbuf.write(input_)
 
     else:
         # Look for valid utf8 range and write that out
-        start = 0
+        start = 0  # sourcery skip: low-code-quality
         written = 0
         counter = 0  # counts line size in bytes
-        decoded = to_unicode(input)
-        length = len(to_basestring(input))
+        decoded = to_unicode(input_)
+        length = len(to_basestring(input_))
         while written < length:
             s = decoded[start]  # take one char
             size = len(to_basestring(s))  # calculate it's size in bytes
             if counter + size > lineLength:
                 try:
                     outbuf.write(bytes("\r\n ", "UTF-8"))
-                except Exception:
+                except Exception:  # noqa #todo: exception not clear
                     # fall back on py2 syntax
                     outbuf.write("\r\n ")
 
                 counter = 1  # one for space
 
             if str is unicode_type:
-                outbuf.write(to_unicode(s))
+                outbuf.write(to_unicode(s))  # noqa # todo: check and remove noqa
             else:
                 # fall back on py2 syntax
                 outbuf.write(s.encode("utf-8"))
@@ -1012,7 +948,7 @@ def foldOneLine(outbuf, input, lineLength=75):
             start += 1
     try:
         outbuf.write(bytes("\r\n", "UTF-8"))
-    except Exception:
+    except Exception:  # noqa #todo: exception not clear
         # fall back on py2 syntax
         outbuf.write("\r\n")
 
@@ -1024,10 +960,7 @@ def defaultSerialize(obj, buf, lineLength):
     outbuf = buf or six.StringIO()
 
     if isinstance(obj, Component):
-        if obj.group is None:
-            groupString = ""
-        else:
-            groupString = obj.group + "."
+        groupString = f"{obj.group}." if obj.group else ""
         if obj.useBegin:
             foldOneLine(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
         for child in obj.getSortedChildren():
@@ -1037,15 +970,15 @@ def defaultSerialize(obj, buf, lineLength):
             foldOneLine(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
 
     elif isinstance(obj, ContentLine):
-        startedEncoded = obj.encoded
+        startedEncoded = obj.encoded  # sourcery skip: extract-method
         if obj.behavior and not startedEncoded:
             obj.behavior.encode(obj)
 
         s = six.StringIO()
 
         if obj.group is not None:
-            s.write(obj.group + ".")
-        s.write(str_(obj.name.upper()))
+            s.write(f"{obj.group}.")
+        s.write(obj.name.upper())
         keys = sorted(obj.params.keys())
         for key in keys:
             paramstr = ",".join(dquoteEscape(p) for p in obj.params[key])
@@ -1072,16 +1005,10 @@ class Stack:
         return len(self.stack)
 
     def top(self):
-        if len(self) == 0:
-            return None
-        else:
-            return self.stack[-1]
+        return self.stack[-1] if self.stack else None
 
     def topName(self):
-        if len(self) == 0:
-            return None
-        else:
-            return self.stack[-1].name
+        return self.stack[-1].name if self.stack else None
 
     def modifyTop(self, item):
         top = self.top()
@@ -1100,6 +1027,7 @@ class Stack:
 
 
 def readComponents(streamOrString, validate=False, transform=True, ignoreUnreadable=False, allowQP=False):
+    # sourcery skip: low-code-quality
     """
     Generate one Component at a time from a stream.
     """
@@ -1121,7 +1049,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
                         msg = "Skipped line {lineNumber}, message: {msg}"
                     else:
                         msg = "Skipped a line, message: {msg}"
-                    logger.error(msg.format(**{"lineNumber": e.lineNumber, "msg": str(e)}))
+                    logger.error(msg.format(lineNumber=e.lineNumber, msg=str(e)))
                     continue
             else:
                 vline = textLineToContentLine(line, n)
@@ -1145,7 +1073,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
                         if versionLine is not None:
                             component.setBehaviorFromVersionLine(versionLine)
                         else:
-                            behavior = getBehavior(component.name)
+                            behavior = get_behavior(component.name)
                             if behavior:
                                 component.setBehavior(behavior)
                         if validate:
@@ -1183,7 +1111,12 @@ def readOne(stream, validate=False, transform=True, ignoreUnreadable=False, allo
 __behaviorRegistry = {}
 
 
-def registerBehavior(behavior, name=None, default=False, id=None):
+@deprecated
+def registerBehavior(behavior, name=None, default=False, id=None):  # noqa
+    return register_behavior(behavior, name, default, _id=id)
+
+
+def register_behavior(behavior, name=None, default=False, _id=None):
     """
     Register the given behavior.
 
@@ -1192,8 +1125,8 @@ def registerBehavior(behavior, name=None, default=False, id=None):
     """
     if not name:
         name = behavior.name.upper()
-    if id is None:
-        id = behavior.versionString
+
+    _id = _id or behavior.versionString
     if name in __behaviorRegistry:
         if default:
             __behaviorRegistry[name].insert(0, (id, behavior))
@@ -1203,7 +1136,12 @@ def registerBehavior(behavior, name=None, default=False, id=None):
         __behaviorRegistry[name] = [(id, behavior)]
 
 
-def getBehavior(name, id=None):
+@deprecated
+def getBehavior(name, id=None):  # noqa
+    return get_behavior(name, _id=id)
+
+
+def get_behavior(name, _id=None):
     """
     Return a matching behavior if it exists, or None.
 
@@ -1211,33 +1149,29 @@ def getBehavior(name, id=None):
     """
     name = name.upper()
     if name in __behaviorRegistry:
-        if id:
+        if _id:
             for n, behavior in __behaviorRegistry[name]:
-                if n == id:
+                if n == _id:
                     return behavior
 
         return __behaviorRegistry[name][0][1]
     return None
 
 
-def newFromBehavior(name, id=None):
+@deprecated
+def newFromBehavior(name, id=None):  # noqa
+    return new_from_behavior(name=name, _id=id)
+
+
+def new_from_behavior(name, _id=None):
     """
     Given a name, return a behaviored ContentLine or Component.
     """
     name = name.upper()
-    behavior = getBehavior(name, id)
+    behavior = get_behavior(name, _id)
     if behavior is None:
         raise VObjectError("No behavior found named {0!s}".format(name))
-    if behavior.isComponent:
-        obj = Component(name)
-    else:
-        obj = ContentLine(name, [], "")
+    obj = Component(name) if behavior.isComponent else ContentLine(name, [], "")
     obj.behavior = behavior
     obj.isNative = False
     return obj
-
-
-# --------------------------- Helper function ----------------------------------
-def backslashEscape(s):
-    s = s.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,")
-    return s.replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n")

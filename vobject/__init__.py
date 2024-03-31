@@ -77,12 +77,12 @@ VObject Overview
 """
 
 from . import icalendar, vcard
-from .base import newFromBehavior, readComponents, readOne
+from .base import new_from_behavior, readComponents, readOne
 
 
 def iCalendar():
-    return newFromBehavior("vcalendar", "2.0")
+    return new_from_behavior("vcalendar", "2.0")
 
 
 def vCard():
-    return newFromBehavior("vcard", "3.0")
+    return new_from_behavior("vcard", "3.0")

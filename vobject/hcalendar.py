@@ -32,7 +32,8 @@ from datetime import date, datetime, timedelta
 
 import six
 
-from .base import CRLF, registerBehavior
+from .base import register_behavior
+from .helper import CRLF, indent_str
 from .icalendar import VCalendar2_0
 
 
@@ -40,17 +41,17 @@ class HCalendar(VCalendar2_0):
     name = "HCALENDAR"
 
     @classmethod
-    def serialize(cls, obj, buf=None, lineLength=None, validate=True):
+    def serialize(cls, obj, buf=None, lineLength=None, validate=True, *args, **kwargs):
         """
         Serialize iCalendar to HTML using the hCalendar microformat (http://microformats.org/wiki/hcalendar)
         """
+        print("unused vars", lineLength, validate)  # todo: check and remove
 
         outbuf = buf or six.StringIO()
-        level = 0  # holds current indentation level
-        tabwidth = 3
+        level, tabwidth = 0, 3  # holds current indentation level
 
         def indent():
-            return " " * level * tabwidth
+            return indent_str(level=level, tabwidth=tabwidth)
 
         def out(s):
             outbuf.write(indent())
@@ -61,22 +62,23 @@ class HCalendar(VCalendar2_0):
         vevents = obj.vevent_list
 
         for event in vevents:
-            out('<span class="vevent">' + CRLF)
+            out(f'<span class="vevent">{CRLF}')
             level += 1
 
             # URL
             url = event.getChildValue("url")
             if url:
-                out('<a class="url" href="' + url + '">' + CRLF)
+                out(f'<a class="url" href="{url}">{CRLF}')
                 level += 1
             # SUMMARY
             summary = event.getChildValue("summary")
             if summary:
-                out('<span class="summary">' + summary + "</span>:" + CRLF)
+                out(f'<span class="summary">{summary}</span>:{CRLF}')
 
             # DTSTART
             dtstart = event.getChildValue("dtstart")
             if dtstart:
+                machine = timeformat = ""
                 if type(dtstart) is date:
                     timeformat = "%A, %B %e"
                     machine = "%Y%m%d"
@@ -116,20 +118,20 @@ class HCalendar(VCalendar2_0):
             # LOCATION
             location = event.getChildValue("location")
             if location:
-                out('at <span class="location">' + location + "</span>" + CRLF)
+                out(f'at <span class="location">{location}</span>{CRLF}')
 
             description = event.getChildValue("description")
             if description:
-                out('<div class="description">' + description + "</div>" + CRLF)
+                out(f'<div class="description">{description}</div>{CRLF}')
 
             if url:
                 level -= 1
-                out("</a>" + CRLF)
+                out(f"</a>{CRLF}")
 
             level -= 1
-            out("</span>" + CRLF)  # close vevent
+            out(f"</span>{CRLF}")  # close vevent
 
         return buf or outbuf.getvalue()
 
 
-registerBehavior(HCalendar)
+register_behavior(HCalendar)

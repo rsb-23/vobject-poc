@@ -4,6 +4,9 @@
 [![Build](https://github.com/py-vobject/vobject/actions/workflows/test.yml/badge.svg)](https://github.com/py-vobject/vobject/actions/workflows/test.yml)
 [![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
+> :warning: `latest` branch in under-development. It uses latest Python3 features.
+> Follow project [py-vobject/vobject](https://github.com/py-vobject/vobject) for stable releases.
+
 VObject is intended to be a full-featured Python package for parsing and 
 generating vCard and vCalendar files.
 
@@ -52,7 +55,7 @@ Or download the package and run:
 python setup.py install
 ```
 
-VObject requires Python 2.7 or higher, along with the [dateutil](https://pypi.python.org/pypi/python-dateutil/) and [six](https://pypi.python.org/pypi/six) packages.
+VObject requires Python 3.7 or higher, along with the [dateutil](https://pypi.python.org/pypi/python-dateutil/) and [six](https://pypi.python.org/pypi/six) packages.
 
 
 # Running tests

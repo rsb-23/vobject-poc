@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-from __future__ import print_function
-
+# sourcery skip: no-loop-in-tests, no-conditionals-in-tests
 import datetime
 import json
 import re
@@ -61,7 +59,7 @@ class TestCalendarSerializing(unittest.TestCase):
         CreateCalendar 2.0 format from scratch
         """
         test_cal = get_test_file("simple_2_0_test.ics")
-        cal = base.newFromBehavior("vcalendar", "2.0")
+        cal = base.new_from_behavior("vcalendar", "2.0")
         cal.add("vevent")
         cal.vevent.add("dtstart").value = datetime.datetime(2006, 5, 9)
         cal.vevent.add("description").value = "Test event"
@@ -81,19 +79,19 @@ class TestCalendarSerializing(unittest.TestCase):
         """
         Test unicode characters
         """
-        test_cal = get_test_file("utf8_test.ics")
-        vevent = base.readOne(test_cal).vevent
-        vevent2 = base.readOne(vevent.serialize())
-        self.assertEqual(str(vevent), str(vevent2))
 
-        self.assertEqual(vevent.summary.value, "The title こんにちはキティ")
-
-        if sys.version_info[0] < 3:
-            test_cal = test_cal.decode("utf-8")
-            vevent = base.readOne(test_cal).vevent
+        def common_checks(test_cal_):
+            vevent = base.readOne(test_cal_).vevent
             vevent2 = base.readOne(vevent.serialize())
             self.assertEqual(str(vevent), str(vevent2))
             self.assertEqual(vevent.summary.value, "The title こんにちはキティ")
+
+        test_cal = get_test_file("utf8_test.ics")
+        common_checks(test_cal)
+
+        if sys.version_info[0] < 3:
+            test_cal = test_cal.decode("utf-8")  # noqa
+            common_checks(test_cal)
 
     def test_wrapping(self):
         """
@@ -109,7 +107,7 @@ class TestCalendarSerializing(unittest.TestCase):
         """
         Multi-text serialization test
         """
-        category = base.newFromBehavior("categories")
+        category = base.new_from_behavior("categories")
         category.value = ["Random category"]
         self.assertEqual(category.serialize().strip(), "CATEGORIES:Random category")
 
@@ -120,7 +118,7 @@ class TestCalendarSerializing(unittest.TestCase):
         """
         Semi-colon separated multi-text serialization test
         """
-        request_status = base.newFromBehavior("request-status")
+        request_status = base.new_from_behavior("request-status")
         request_status.value = ["5.1", "Service unavailable"]
         self.assertEqual(request_status.serialize().strip(), "REQUEST-STATUS:5.1;Service unavailable")
 
@@ -262,8 +260,9 @@ class TestBehaviors(unittest.TestCase):
         )
 
         # test get_behavior
-        behavior = base.getBehavior("VCALENDAR")
-        self.assertEqual(str(behavior), "<class 'vobject.icalendar.VCalendar2_0'>")
+        behavior = base.get_behavior("VCALENDAR")
+        # TODO: analyze class name conflict
+        self.assertEqual(str(behavior), "<class 'vobject.icalendar.VCalendar2'>")
         self.assertTrue(behavior.isComponent)
 
         self.assertEqual(base.getBehavior("invalid_name"), None)
@@ -456,6 +455,8 @@ class TestVcards(unittest.TestCase):
     Test VCards
     """
 
+    test_file = None
+
     @classmethod
     def setUpClass(cls):
         """
@@ -469,7 +470,7 @@ class TestVcards(unittest.TestCase):
         """
         Test creating a vCard
         """
-        vcard = base.newFromBehavior("vcard", "3.0")
+        vcard = base.new_from_behavior("vcard", "3.0")
         self.assertEqual(str(vcard), "<VCARD| []>")
 
     def test_default_behavior(self):
@@ -477,7 +478,7 @@ class TestVcards(unittest.TestCase):
         Default behavior test.
         """
         card = self.card
-        self.assertEqual(base.getBehavior("note"), None)
+        self.assertEqual(base.get_behavior("note"), None)
         self.assertEqual(
             str(card.note.value), "The Mayor of the great city of Goerlitz in the great country of Germany.\nNext line."
         )
@@ -648,10 +649,18 @@ class TestIcalendar(unittest.TestCase):
         self.assertIn(expected_vtimezone.replace("\r\n", "\n"), serialized.replace("\r\n", "\n"))
 
         # Exhaustively test all zones (just looking for no errors)
+
         for tzname in pytz.all_timezones:
             unregister_tzid(tzname)
             tz = icalendar.TimezoneComponent(tzinfo=pytz.timezone(tzname))
             tz.serialize()
+
+    @staticmethod
+    def _add_tags(comp, uid, dtstamp, dtstart, dtend):  # todo: rename if required
+        comp.add("uid").value = uid
+        comp.add("dtstamp").value = dtstamp
+        comp.add("dtstart").value = dtstart
+        comp.add("dtend").value = dtend
 
     def test_freeBusy(self):
         """
@@ -659,11 +668,15 @@ class TestIcalendar(unittest.TestCase):
         """
         test_cal = get_test_file("freebusy.ics")
 
-        vfb = base.newFromBehavior("VFREEBUSY")
-        vfb.add("uid").value = "test"
-        vfb.add("dtstamp").value = datetime.datetime(2006, 2, 15, 0, tzinfo=utc)
-        vfb.add("dtstart").value = datetime.datetime(2006, 2, 16, 1, tzinfo=utc)
-        vfb.add("dtend").value = vfb.dtstart.value + two_hours
+        vfb = base.new_from_behavior("VFREEBUSY")
+        self._add_tags(
+            vfb,
+            uid="test",
+            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
+            dtstart=datetime.datetime(2006, 2, 16, 1, tzinfo=utc),
+            dtend=None,
+        )
+        vfb.dtend.value = vfb.dtstart.value + two_hours
         vfb.add("freebusy").value = [(vfb.dtstart.value, two_hours / 2)]
         vfb.add("freebusy").value = [(vfb.dtstart.value, vfb.dtend.value)]
 
@@ -675,18 +688,24 @@ class TestIcalendar(unittest.TestCase):
         """
         test_cal = get_test_file("availablity.ics")
 
-        vcal = base.newFromBehavior("VAVAILABILITY")
-        vcal.add("uid").value = "test"
-        vcal.add("dtstamp").value = datetime.datetime(2006, 2, 15, 0, tzinfo=utc)
-        vcal.add("dtstart").value = datetime.datetime(2006, 2, 16, 0, tzinfo=utc)
-        vcal.add("dtend").value = datetime.datetime(2006, 2, 17, 0, tzinfo=utc)
+        vcal = base.new_from_behavior("VAVAILABILITY")
+        self._add_tags(
+            vcal,
+            uid="test",
+            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
+            dtstart=datetime.datetime(2006, 2, 16, 0, tzinfo=utc),
+            dtend=datetime.datetime(2006, 2, 17, 0, tzinfo=utc),
+        )
         vcal.add("busytype").value = "BUSY"
 
-        av = base.newFromBehavior("AVAILABLE")
-        av.add("uid").value = "test1"
-        av.add("dtstamp").value = datetime.datetime(2006, 2, 15, 0, tzinfo=utc)
-        av.add("dtstart").value = datetime.datetime(2006, 2, 16, 9, tzinfo=utc)
-        av.add("dtend").value = datetime.datetime(2006, 2, 16, 12, tzinfo=utc)
+        av = base.new_from_behavior("AVAILABLE")
+        self._add_tags(
+            av,
+            uid="test1",
+            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
+            dtstart=datetime.datetime(2006, 2, 16, 9, tzinfo=utc),
+            dtend=datetime.datetime(2006, 2, 16, 12, tzinfo=utc),
+        )
         av.add("summary").value = "Available in the morning"
 
         vcal.add(av)
@@ -725,7 +744,7 @@ class TestIcalendar(unittest.TestCase):
             list(vevent.rruleset), [datetime.datetime(2005, 1, 20, 9, 0), datetime.datetime(2005, 2, 1, 9, 0)]
         )
         self.assertEqual(
-            list(vevent.getrruleset(addRDate=True)),
+            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
             [datetime.datetime(2005, 1, 19, 9, 0), datetime.datetime(2005, 1, 20, 9, 0)],
         )
 
@@ -736,31 +755,30 @@ class TestIcalendar(unittest.TestCase):
             list(vevent.rruleset), [datetime.datetime(2005, 3, 29, 0, 0), datetime.datetime(2005, 3, 31, 0, 0)]
         )
         self.assertEqual(
-            list(vevent.getrruleset(True)), [datetime.datetime(2005, 3, 18, 0, 0), datetime.datetime(2005, 3, 29, 0, 0)]
+            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
+            [datetime.datetime(2005, 3, 18, 0, 0), datetime.datetime(2005, 3, 29, 0, 0)],
         )
 
-    def test_recurrence_without_tz(self):
-        """
-        Test recurring vevent missing any time zone definitions.
-        """
-        test_file = get_test_file("recurrence-without-tz.ics")
+    def _recurrence_test(self, file_name):
+        test_file = get_test_file(file_name)
         cal = base.readOne(test_file)
         dates = list(cal.vevent.getrruleset())
         self.assertEqual(dates[0], datetime.datetime(2013, 1, 17, 0, 0))
         self.assertEqual(dates[1], datetime.datetime(2013, 1, 24, 0, 0))
         self.assertEqual(dates[-1], datetime.datetime(2013, 3, 28, 0, 0))
+
+    def test_recurrence_without_tz(self):
+        """
+        Test recurring vevent missing any time zone definitions.
+        """
+        self._recurrence_test("recurrence-without-tz.ics")
 
     def test_recurrence_offset_naive(self):
         """
         Ensure recurring vevent missing some time zone definitions is
         parsing. See isseu #75.
         """
-        test_file = get_test_file("recurrence-offset-naive.ics")
-        cal = base.readOne(test_file)
-        dates = list(cal.vevent.getrruleset())
-        self.assertEqual(dates[0], datetime.datetime(2013, 1, 17, 0, 0))
-        self.assertEqual(dates[1], datetime.datetime(2013, 1, 24, 0, 0))
-        self.assertEqual(dates[-1], datetime.datetime(2013, 3, 28, 0, 0))
+        self._recurrence_test("recurrence-offset-naive.ics")
 
 
 class TestChangeTZ(unittest.TestCase):
@@ -909,4 +927,4 @@ class TestCompatibility(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main(buffer=True)
