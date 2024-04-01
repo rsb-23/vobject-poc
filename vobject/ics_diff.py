@@ -1,6 +1,6 @@
 from optparse import OptionParser
 
-from .base import Component, get_behavior, new_from_behavior, readOne
+from .base import Component, new_from_behavior, readOne
 
 """
 Compare VTODOs and VEVENTs in two iCalendar sources.
@@ -91,16 +91,6 @@ def diff(left, right):
 
         return output
 
-    def newComponent(name, body):  # noqa
-        # TODO: remove this unused func
-        if body is None:
-            return None
-
-        c = Component(name)
-        c.behavior = get_behavior(name)
-        c.isNative = True
-        return c
-
     def processComponentPair(leftComp, rightComp):
         """
         Return None if a match, or a pair of components including UIDs and
@@ -135,8 +125,7 @@ def diff(left, right):
 
         _left = new_from_behavior(leftComp.name)
         _right = new_from_behavior(leftComp.name)
-        # add a UID, if one existed, despite the fact that they'll always be
-        # the same
+        # add a UID, if one existed, despite the fact that they'll always be the same
         uid = leftComp.getChildValue("uid")
         if uid is not None:
             _left.add("uid").value = uid
@@ -176,10 +165,10 @@ def prettyDiff(leftObj, rightObj):
     for left, right in diff(leftObj, rightObj):
         print("<<<<<<<<<<<<<<<")
         if left is not None:
-            left.prettyPrint()
+            left.pretty_print()
         print("===============")
         if right is not None:
-            right.prettyPrint()
+            right.pretty_print()
         print(">>>>>>>>>>>>>>>")
 
 

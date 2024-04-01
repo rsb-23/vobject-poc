@@ -11,16 +11,13 @@ from datetime import date
 
 import six
 
-from .helper import CRLF, DEBUG, SPACEORTAB, backslashEscape, deprecated, indent_str, logger
+from .helper import CRLF, SPACEORTAB, backslashEscape, deprecated, indent_str, logger
+from .vobject_error import NativeError, ParseError, VObjectError
 
 backslashEscape = backslashEscape  # todo: to be removed later
 # Python 3 no longer has a basestring type, so....
 basestring = (str, bytes)
-
-if not isinstance(b"", type("")):  # sourcery skip
-    unicode_type = str
-else:
-    unicode_type = unicode  # noqa
+logger.name = __name__
 
 
 def to_unicode(value):
@@ -29,7 +26,7 @@ def to_unicode(value):
     If the argument is already a unicode string, it is returned
     unchanged.  Otherwise it must be a byte string and is decoded as utf8.
     """
-    return value if isinstance(value, unicode_type) else value.decode("utf-8")
+    return value if isinstance(value, str) else value.decode("utf-8")
 
 
 def to_basestring(s):
@@ -205,12 +202,10 @@ class VBase(object):
             behavior = self.behavior
 
         if behavior:
-            if DEBUG:
-                logger.debug("serializing {0!s} with behavior {1!s}".format(self.name, behavior))
+            logger.debug(f"serializing {self.name!s} with behavior {behavior!s}")
             return behavior.serialize(self, buf, lineLength, validate, *args, **kwargs)
         else:
-            if DEBUG:
-                logger.debug("serializing {0!s} without behavior".format(self.name))
+            logger.debug(f"serializing {self.name!s} without behavior")
             return defaultSerialize(self, buf, lineLength)
 
 
@@ -289,16 +284,13 @@ class ContentLine(VBase):
             self.singletonparams.remove("QUOTED-PRINTABLE")
         if qp:
             if "ENCODING" in self.params:
-                self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(  # noqa
-                    self.params["ENCODING"]
-                )
+                _encoding = self.params["ENCODING"]
+            elif "CHARSET" in self.params:
+                _encoding = self.params["CHARSET"][0]
             else:
-                if "CHARSET" in self.params:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(  # noqa
-                        self.params["CHARSET"][0]
-                    )
-                else:
-                    self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode("utf-8")  # noqa
+                _encoding = "utf-8"
+            # TODO: check why decoding twice?
+            self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(_encoding)  # noqa I
 
     @classmethod
     def duplicate(cls, copyit):
@@ -320,7 +312,8 @@ class ContentLine(VBase):
     def __eq__(self, other):
         try:
             return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
-        except Exception:  # noqa #todo: exception not clear
+        except Exception as e:  # noqa #todo: exception not clear
+            logger.critical(e)
             return False
 
     def __getattr__(self, name):
@@ -391,14 +384,18 @@ class ContentLine(VBase):
     def __unicode__(self):
         return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
 
-    def prettyPrint(self, level=0, tabwidth=3):
+    @deprecated
+    def prettyPrint(self, level=0, tabwidth=3) -> None:
+        self.pretty_print(level=level, tabwidth=tabwidth)
+
+    def pretty_print(self, level=0, tabwidth=3) -> None:
         pre = indent_str(level=level, tabwidth=tabwidth)
-        print(pre, f"{self.name}: {self.valueRepr()}")
+        logger.info(pre, f"{pre} {self.name}: {self.valueRepr()}")
         if self.params:
-            print(pre, f"params for {self.name}:")
+            logger.info(pre, f"{pre} params for {self.name}:")
             pre1 = indent_str(level=level + 1, tabwidth=tabwidth)
             for k in self.params.keys():
-                print(pre1, k, self.params[k])
+                logger.info(f"{pre1} {k} {self.params[k]}")
 
 
 class Component(VBase):
@@ -642,37 +639,16 @@ class Component(VBase):
     def __repr__(self):
         return self.__str__()
 
+    @deprecated
     def prettyPrint(self, level=0, tabwidth=3):
+        self.pretty_print(level=level, tabwidth=tabwidth)
+
+    def pretty_print(self, level=0, tabwidth=3):
         pre = indent_str(level=level, tabwidth=tabwidth)
-        print(pre, self.name)
+        logger.info(f"{pre} {self.name}")
         if isinstance(self, Component):
             for line in self.getChildren():
                 line.prettyPrint(level + 1, tabwidth)
-
-
-class VObjectError(Exception):
-    def __init__(self, msg, lineNumber=None):
-        self.msg = msg
-        if lineNumber is not None:
-            self.lineNumber = lineNumber
-
-    def __str__(self):
-        if hasattr(self, "lineNumber"):
-            return "At line {0!s}: {1!s}".format(self.lineNumber, self.msg)
-        else:
-            return repr(self.msg)
-
-
-class ParseError(VObjectError):
-    pass
-
-
-class ValidateError(VObjectError):
-    pass
-
-
-class NativeError(VObjectError):
-    pass
 
 
 # --------- Parsing functions and parseLine regular expressions ----------------
@@ -769,7 +745,7 @@ def parseLine(line, lineNumber=None):
     """
     match = line_re.match(line)
     if match is None:
-        raise ParseError("Failed to parse line: {0!s}".format(line), lineNumber)
+        raise ParseError(f"Failed to parse line: {line!s}", lineNumber)
     # Underscores are replaced with dash to work around Lotus Notes
     return (
         match.group("name").replace("_", "-"),
@@ -880,7 +856,7 @@ def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
             # vCard 2.1 allows parameters to be encoded without a parameter name
             # False positives are unlikely, but possible.
             val = logicalLine.getvalue()
-            if val[-1] == "=" and val.lower().find("quoted-printable") >= 0:
+            if val[-1] == "=" and "quoted-printable" in val.lower():
                 quotedPrintable = True
 
         if logicalLine.tell() > 0:
@@ -895,10 +871,10 @@ def dquoteEscape(param):
     """
     Return param, or "param" if ',' or ';' or ':' is in param.
     """
-    if param.find('"') >= 0:
+    if '"' in param:
         raise VObjectError("Double quotes aren't allowed in parameter values.")
     for char in ",;:":  # sourcery skip # temp
-        if param.find(char) >= 0:
+        if char in param:
             return f'"{param}"'
     return param
 
@@ -910,13 +886,17 @@ def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
 
     TO-DO: This all seems odd. Is it still needed, especially in python3?
     """
+
+    def outbuf_write(msg) -> None:
+        try:
+            outbuf.write(bytes(msg, "UTF-8"))
+        except TypeError:
+            # fall back on py2 syntax
+            outbuf.write(msg)
+
     if len(input_) < lineLength:
         # Optimize for unfolded line case
-        try:
-            outbuf.write(bytes(input_, "UTF-8"))
-        except Exception:  # noqa #todo: exception not clear
-            # fall back on py2 syntax
-            outbuf.write(input_)
+        outbuf_write(input_)
 
     else:
         # Look for valid utf8 range and write that out
@@ -929,28 +909,17 @@ def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
             s = decoded[start]  # take one char
             size = len(to_basestring(s))  # calculate it's size in bytes
             if counter + size > lineLength:
-                try:
-                    outbuf.write(bytes("\r\n ", "UTF-8"))
-                except Exception:  # noqa #todo: exception not clear
-                    # fall back on py2 syntax
-                    outbuf.write("\r\n ")
+                outbuf_write("\r\n ")
 
                 counter = 1  # one for space
 
-            if str is unicode_type:
-                outbuf.write(to_unicode(s))  # noqa # todo: check and remove noqa
-            else:
-                # fall back on py2 syntax
-                outbuf.write(s.encode("utf-8"))
+            outbuf_write(s)
 
             written += size
             counter += size
             start += 1
-    try:
-        outbuf.write(bytes("\r\n", "UTF-8"))
-    except Exception:  # noqa #todo: exception not clear
-        # fall back on py2 syntax
-        outbuf.write("\r\n")
+
+    outbuf_write("\r\n")
 
 
 def defaultSerialize(obj, buf, lineLength):
@@ -1092,7 +1061,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
             if stack.topName() is None:
                 logger.warning("Top level component was never named")
             elif stack.top().useBegin:
-                raise ParseError("Component {0!s} was never closed".format((stack.topName())), n)
+                raise ParseError(f"Component {stack.topName()!s} was never closed", n)
             yield stack.pop()
 
     except ParseError as e:
@@ -1112,7 +1081,7 @@ __behaviorRegistry = {}
 
 
 @deprecated
-def registerBehavior(behavior, name=None, default=False, id=None):  # noqa
+def registerBehavior(behavior, name=None, default=False, id=None):  # noqa D
     return register_behavior(behavior, name, default, _id=id)
 
 
@@ -1137,7 +1106,7 @@ def register_behavior(behavior, name=None, default=False, _id=None):
 
 
 @deprecated
-def getBehavior(name, id=None):  # noqa
+def getBehavior(name, id=None):  # noqa D
     return get_behavior(name, _id=id)
 
 
@@ -1159,7 +1128,7 @@ def get_behavior(name, _id=None):
 
 
 @deprecated
-def newFromBehavior(name, id=None):  # noqa
+def newFromBehavior(name, id=None):  # noqa D
     return new_from_behavior(name=name, _id=id)
 
 
@@ -1170,7 +1139,7 @@ def new_from_behavior(name, _id=None):
     name = name.upper()
     behavior = get_behavior(name, _id)
     if behavior is None:
-        raise VObjectError("No behavior found named {0!s}".format(name))
+        raise VObjectError(f"No behavior found named {name!s}")
     obj = Component(name) if behavior.isComponent else ContentLine(name, [], "")
     obj.behavior = behavior
     obj.isNative = False

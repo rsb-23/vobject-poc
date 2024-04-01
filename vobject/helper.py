@@ -7,11 +7,10 @@ import warnings
 logger = logging.getLogger(__name__)
 if not logging.getLogger().handlers:
     handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(name)s %(levelname)s %(message)s")
+    formatter = logging.Formatter("%(name)s:%(lineno)d %(levelname)s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-logger.setLevel(logging.ERROR)  # Log errors
-DEBUG = False  # Don't waste time on debug calls
+logger.setLevel(logging.INFO)  # modify log levels here
 
 # ----------------------------------- Constants --------------------------------
 CR = "\r"

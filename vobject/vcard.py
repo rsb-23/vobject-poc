@@ -4,9 +4,10 @@ import codecs
 
 from . import behavior
 from .base import ContentLine, basestring, register_behavior
-from .helper import backslash_escape
+from .helper import backslash_escape, logger
 from .icalendar import stringToTextValues
 
+logger.name = __name__
 # ------------------------ vCard structs ---------------------------------------
 
 
@@ -127,10 +128,9 @@ class VCardTextBehavior(behavior.Behavior):
                 line.encoding_param = cls.base64string
             encoding = getattr(line, "encoding_param", None)
             if encoding:
-                if isinstance(line.value, bytes):
-                    line.value = codecs.decode(line.value, "base64")
-                else:
-                    line.value = codecs.decode(line.value.encode("utf-8"), "base64")  # noqa
+                if not isinstance(line.value, bytes):
+                    line.value = line.value.encode("utf-8")
+                line.value = codecs.decode(line.value, "base64")
             else:
                 line.value = stringToTextValues(line.value)[0]
             line.encoded = False
@@ -220,7 +220,7 @@ class Photo(VCardTextBehavior):
 
     @classmethod
     def valueRepr(cls, line):
-        return " (BINARY PHOTO DATA at 0x{0!s}) ".format(id(line.value))
+        return f" (BINARY PHOTO DATA at 0x{id(line.value)!s}) "
 
     @classmethod
     def serialize(cls, obj, buf, line_length, validate=True, *args, **kwargs):
@@ -249,10 +249,8 @@ def splitFields(string):
     return [toListOrString(i) for i in stringToTextValues(string, listSeparator=";", charList=";")]
 
 
-def toList(string_or_list):
-    if isinstance(string_or_list, basestring):
-        return [string_or_list]
-    return string_or_list
+def toList(string_or_list) -> list[str]:
+    return [string_or_list] if isinstance(string_or_list, basestring) else string_or_list
 
 
 def serializeFields(obj, order=None):

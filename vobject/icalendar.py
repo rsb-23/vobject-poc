@@ -1,8 +1,6 @@
 # noinspection PyProtectedMember
-# sourcery skip: merge-nested-ifs
 
 """Definitions and behavior for iCalendar, also known as vCalendar 2.0"""
-
 
 import base64
 import contextlib
@@ -34,19 +32,11 @@ except ImportError:
     pytz = Pytz  # keeps quantifiedcode happy
 
 from . import behavior
-from .base import (
-    Component,
-    ContentLine,
-    NativeError,
-    ParseError,
-    ValidateError,
-    VObjectError,
-    foldOneLine,
-    logger,
-    register_behavior,
-)
+from .base import Component, ContentLine, foldOneLine, logger, register_behavior
 from .helper import backslash_escape, indent_str
+from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
 
+logger.name = __name__
 # ------------------------------- Constants ------------------------------------
 DATENAMES = ("rdate", "exdate")
 RULENAMES = ("exrule", "rrule")
@@ -617,7 +607,7 @@ class RecurringComponent(Component):
                     if days:
                         values["BYDAY"] = days
 
-                    if rule._bymonthday is not None and len(rule._bymonthday) > 0:
+                    if rule._bymonthday is not None and len(rule._bymonthday) > 0:  # sourcery skip: merge-nested-ifs
                         if not (
                             rule._freq <= rrule.MONTHLY
                             and len(rule._bymonthday) == 1
@@ -629,7 +619,7 @@ class RecurringComponent(Component):
                     if rule._bynmonthday is not None and len(rule._bynmonthday) > 0:
                         values.setdefault("BYMONTHDAY", []).extend(str(n) for n in rule._bynmonthday)
 
-                    if rule._bymonth is not None and len(rule._bymonth) > 0:
+                    if rule._bymonth is not None and len(rule._bymonth) > 0:  # sourcery skip: merge-nested-ifs
                         if (
                             rule._byweekday is not None
                             or len(rule._bynweekday or ()) > 0
@@ -837,7 +827,7 @@ class DateOrDateTimeBehavior(behavior.Behavior):
             return obj
         obj.value = obj.value
         obj.value = parseDtstart(obj, allowSignatureMismatch=True)
-        if getattr(obj, "value_param", "DATE-TIME").upper() == "DATE-TIME":
+        if getattr(obj, "value_param", "DATE-TIME").upper() == "DATE-TIME":  # sourcery skip: merge-nested-ifs
             if hasattr(obj, "tzid_param"):
                 # Keep a copy of the original TZID around
                 obj.params["X-VOBJ-ORIGINAL-TZID"] = [obj.tzid_param]
@@ -1049,7 +1039,8 @@ class VCalendar2(VCalendarComponentBehavior):
             first_components = [
                 s for s in cls.sortFirst if s in obj.contents and isinstance(obj.contents[s][0], Component)
             ]
-        except Exception:  # noqa
+        except Exception as e:  # noqa
+            logger.critical(e)
             first_props = first_components = []
             # first_components = []
 
@@ -1777,9 +1768,8 @@ def periodToString(period, convertToUTC=False):
 
 
 # ----------------------- Parsing functions ------------------------------------
-def isDuration(s):
-    s = s.upper()
-    return (s.find("P") != -1) and (s.find("P") < 2)
+def isDuration(s: str):
+    return "P" in s[:2].upper()
 
 
 def stringToDate(s):
@@ -1800,11 +1790,10 @@ def stringToDateTime(s, tzinfo=None):
         hour = int(s[9:11])
         minute = int(s[11:13])
         second = int(s[13:15])
-        if len(s) > 15:
-            if s[15] == "Z":
-                tzinfo = getTzid("UTC")
+        if len(s) > 15 and s[15] == "Z":
+            tzinfo = getTzid("UTC")
     except Exception as e:
-        raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s)) from e
+        raise ParseError(f"'{s!s}' is not a valid DATE-TIME") from e
     year = year and year or 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # PyTZ case
         return tzinfo.localize(datetime.datetime(year, month, day, hour, minute, second))
@@ -1840,10 +1829,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
     results = []
 
     while True:
-        try:
-            charIndex, char = next(charIterator)
-        except Exception:  # noqa
-            char = "eof"
+        charIndex, char = next(charIterator, (None, "eof"))
 
         if state == "read normal":
             if char == "\\":
@@ -1912,10 +1898,7 @@ def stringToDurations(s, strict=False):
     week = day = hour = minute = sec = 0
 
     while True:
-        try:
-            charIndex, char = next(charIterator)
-        except Exception:  # noqa
-            char = "eof"
+        charIndex, char = next(charIterator, (None, "eof"))
 
         if state == "start":
             if char == "+":
@@ -2007,7 +1990,7 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
     elif valueParam == "DATE-TIME":
         try:
             return stringToDateTime(contentline.value, tzinfo)
-        except Exception:  # noqa
+        except ParseError:
             if allowSignatureMismatch:
                 return stringToDate(contentline.value)
             else:

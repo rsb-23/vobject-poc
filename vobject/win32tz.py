@@ -8,7 +8,7 @@ try:
     import winreg as _winreg
 except ImportError:
     # py3.7 and py3.8
-    import _winreg  # noqa
+    import _winreg  # noqa I for compatibility
 
 handle = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
 tzparent = _winreg.OpenKey(handle, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones")

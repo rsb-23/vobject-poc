@@ -15,6 +15,7 @@ from vobject.base import ContentLine, ParseError
 from vobject.base import __behaviorRegistry as BehaviorRegistry
 from vobject.base import parseLine, readComponents, textLineToContentLine
 from vobject.change_tz import change_tz
+from vobject.helper import indent_str
 from vobject.icalendar import (
     MultiDateBehavior,
     PeriodBehavior,
@@ -25,6 +26,7 @@ from vobject.icalendar import (
     timedeltaToString,
     utc,
 )
+from vobject.vcard import toList
 
 behavior_registry = BehaviorRegistry
 two_hours = datetime.timedelta(hours=2)
@@ -924,6 +926,20 @@ class TestCompatibility(unittest.TestCase):
         for vo in vobjs:
             self.assertIsNotNone(vo)
         return
+
+
+class TestVcardFunc(unittest.TestCase):
+
+    def test_to_list(self):
+        assert toList("") == [""]
+        assert toList("Knudson") == ["Knudson"]
+
+
+class TestHelper(unittest.TestCase):
+
+    def test_indent_str(self):
+        assert indent_str(level=2) == " " * 6
+        assert indent_str(level=1, tabwidth=4) == " " * 4
 
 
 if __name__ == "__main__":
