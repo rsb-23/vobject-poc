@@ -1,12 +1,12 @@
 """Translate an ics file's events to a different timezone."""
 
+from datetime import datetime
 from optparse import OptionParser
 
 import pytz
 from dateutil import tz
 
-from vobject import icalendar, base
-from datetime import datetime, tzinfo
+from vobject import base, icalendar
 
 version = "0.1"
 
