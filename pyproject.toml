@@ -18,3 +18,15 @@ multi_line_output = 3
 source = [ "vobject/" ]
 [tool.coverage.report]
 fail_under = 70.0
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py311
+
+[testenv]
+deps =
+    -r{toxinidir}/requirements.txt
+commands =
+    python -m unittest discover -b
+"""
