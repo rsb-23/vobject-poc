@@ -14,6 +14,11 @@ from functools import partial
 import six
 from dateutil import rrule, tz
 
+from . import behavior
+from .base import Component, ContentLine, foldOneLine, logger, register_behavior
+from .helper import backslash_escape, indent_str
+from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
+
 try:
     import pytz
 except ImportError:
@@ -31,10 +36,6 @@ except ImportError:
 
     pytz = Pytz  # keeps quantifiedcode happy
 
-from . import behavior
-from .base import Component, ContentLine, foldOneLine, logger, register_behavior
-from .helper import backslash_escape, indent_str
-from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
 
 logger.name = __name__
 # ------------------------------- Constants ------------------------------------

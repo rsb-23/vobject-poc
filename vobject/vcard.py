@@ -1,5 +1,7 @@
 """Definitions and behavior for vCard 3.0"""
 
+from __future__ import annotations
+
 import codecs
 
 from . import behavior
@@ -8,6 +10,8 @@ from .helper import backslash_escape, logger
 from .icalendar import stringToTextValues
 
 logger.name = __name__
+
+
 # ------------------------ vCard structs ---------------------------------------
 
 
