@@ -47,7 +47,9 @@ setup(name = "vobject",
             ]
       },
       include_package_data = True,
-      install_requires = ['python-dateutil >= 2.4.0', 'six'],
+      install_requires=["python-dateutil >= 2.5.0; python_version < '3.10'",
+                        "python-dateutil >= 2.7.0; python_version >= '3.10'",
+                        "pytz", 'six'],
       platforms = ["any"],
       packages = find_packages(),
       description = "A full-featured Python package for parsing and creating "

@@ -333,7 +333,7 @@ class TimezoneComponent(Component):
         if tzinfo is None or (not allowUTC and tzinfo_eq(tzinfo, utc)):
             # If tzinfo is UTC, we don't need a TZID
             return None
-        # try PyICU's tzid key
+        # try Pytz's tzid key
         if hasattr(tzinfo, 'tzid'):
             return toUnicode(tzinfo.tzid)
 
