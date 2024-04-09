@@ -1,23 +1,12 @@
 """Translate an ics file's events to a different timezone."""
 
-<<<<<<< HEAD
-from optparse import OptionParser
-import vobject
-
-try:
-    import PyICU
-except:
-    PyICU = None
-
-=======
->>>>>>> master
 from datetime import datetime
 from optparse import OptionParser
 
 import pytz
 from dateutil import tz
 
-from vobject import base, icalendar
+import vobject
 
 version = "0.1"
 
@@ -57,7 +46,7 @@ def convert_events(utc_only, args):
     _tzone = args[1] if len(args) > 1 else 'UTC'
 
     print("... Reading {}".format(ics_file))
-    cal = base.readOne(open(ics_file))
+    cal = vobject.readOne(open(ics_file))
     change_tz(cal, new_timezone=tz.gettz(_tzone), default=tz.gettz('UTC'), utc_only=utc_only)
 
     out_name = "{}.converted".format(ics_file)
@@ -74,32 +63,7 @@ def main():
     if options.list:
         show_timezones()
     elif args:
-<<<<<<< HEAD
-        utc_only = options.utc
-        if utc_only:
-            which = "only UTC"
-        else:
-            which = "all"
-        print("Converting {0!s} events".format(which))
-        ics_file = args[0]
-        if len(args) > 1:
-            timezone = PyICU.ICUtzinfo.getInstance(args[1])
-        else:
-            timezone = PyICU.ICUtzinfo.default
-        print("... Reading {0!s}".format(ics_file))
-        cal = vobject.readOne(open(ics_file))
-        change_tz(cal, timezone, PyICU.ICUtzinfo.default, utc_only)
-
-        out_name = ics_file + '.converted'
-        print("... Writing {0!s}".format(out_name))
-
-        with open(out_name, 'wb') as out:
-            cal.serialize(out)
-
-        print("Done")
-=======
         convert_events(utc_only=options.utc, args=args)
->>>>>>> master
 
 
 def get_options():
