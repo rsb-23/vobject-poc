@@ -21,7 +21,7 @@ VObject is licensed under the [Apache 2.0 license](http://www.apache.org/license
 Useful scripts included with VObject:
 
 * [ics_diff](https://github.com/py-vobject/vobject/blob/master/vobject/ics_diff.py): order is irrelevant in iCalendar files, return a diff of meaningful changes between icalendar files
-* [change_tz](https://github.com/py-vobject/vobject/blob/master/vobject/change_tz.py): Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones PyICU supports. Requires [PyICU](https://pypi.python.org/pypi/PyICU/).
+* [change_tz](https://github.com/py-vobject/vobject/blob/master/vobject/change_tz.py): Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones **pytz** supports. Requires [pytz](https://pypi.python.org/pypi/pytz/).
 
 # History
 VObject was originally developed in concert with the Open Source Application 
