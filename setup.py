@@ -28,16 +28,18 @@ from setuptools import setup, find_packages
 doclines = (__doc__ or '').splitlines()
 
 setup(name = "vobject",
-      version = "0.9.7",
       author = "Jeffrey Harris",
       author_email = "jeffrey@osafoundation.org",
       maintainer = "David Arnold",
       maintainer_email="davida@pobox.com",
       license = "Apache",
       zip_safe = True,
-      url = "http://py-vobject.github.io/",
-      download_url = 'https://github.com/py-vobject/vobject/releases',
-      bugtrack_url = "https://github.com/py-vobject/vobject/issues",
+      project_urls = {
+          "Home": "http://py-vobject.github.io/",
+          "GitHub": "https://github.com/py-vobject/vobject",
+          "Download": "https://github.com/py-vobject/vobject/releases",
+          "Issues": "https://github.com/py-vobject/vobject/issues",
+      },
       entry_points = {
             'console_scripts': [
                   'ics_diff = vobject.ics_diff:main',

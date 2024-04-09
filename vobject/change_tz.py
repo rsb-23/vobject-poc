@@ -1,7 +1,7 @@
 """Translate an ics file's events to a different timezone."""
 
 from optparse import OptionParser
-from vobject import icalendar, base
+import vobject
 
 try:
     import PyICU
@@ -11,7 +11,7 @@ except:
 from datetime import datetime
 
 
-def change_tz(cal, new_timezone, default, utc_only=False, utc_tz=icalendar.utc):
+def change_tz(cal, new_timezone, default, utc_only=False, utc_tz=vobject.icalendar.utc):
     """
     Change the timezone of the specified component.
 
@@ -58,7 +58,7 @@ def main():
         else:
             timezone = PyICU.ICUtzinfo.default
         print("... Reading {0!s}".format(ics_file))
-        cal = base.readOne(open(ics_file))
+        cal = vobject.readOne(open(ics_file))
         change_tz(cal, timezone, PyICU.ICUtzinfo.default, utc_only)
 
         out_name = ics_file + '.converted'
@@ -70,14 +70,11 @@ def main():
         print("Done")
 
 
-version = "0.1"
-
-
 def get_options():
     # Configuration options
 
     usage = """usage: %prog [options] ics_file [timezone]"""
-    parser = OptionParser(usage=usage, version=version)
+    parser = OptionParser(usage=usage, version=vobject.VERSION)
     parser.set_description("change_tz will convert the timezones in an ics file. ")
 
     parser.add_option("-u", "--only-utc", dest="utc", action="store_true",
