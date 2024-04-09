@@ -1,22 +1,11 @@
 .. vobject programmers guide
    Copyright (C) 2024, David Arnold
 
-.. Introduction
-   Quick Start
-   Calendars and Cards
-   Installing
-   Importing
-   Parsing
-   Creating
-   Common Problems
-   Getting Help
-   Index
-
 vObject
 =======
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
 Introduction
@@ -107,7 +96,7 @@ above), or using a function:
     3.0
     >>>
 
-or using a dictionary (of lists):
+Or using the ``contents`` dictionary:
 
 .. code-block:: python
     :linenos:
@@ -116,7 +105,14 @@ or using a dictionary (of lists):
     3.0
     >>>
 
-or using their names to access them directly as attributes:
+Note two things when accessing the item's properties via the ``contents``
+dictionary: first, the dictionary is a collection is *lists*, so even
+singleton property values need to access the first list element, and
+second, the object in the list is a class that holds the actual value,
+accessed using the ``value`` attribute (there are other attributes of
+the value available from that class instance as well).
+
+Or using their names to access them directly as attributes:
 
 .. code-block:: python
     :linenos:
@@ -125,6 +121,9 @@ or using their names to access them directly as attributes:
     3.0
     >>>
 
+When accessed
+Confusingly, when accessed as directly named attributes of the parsed
+item, singleton properties *aren't* a list: you can access their valu
 If the child has parameters, in addition to its value, they are available
 as a dictionary:
 
@@ -185,87 +184,6 @@ output).
 
 Note that ``vobject`` has added the mandatory ``UID`` and ``DTSTAMP``
 components during serialization.
-
-
-.. #####################################################################
-
-Calendars and Cards
-===================
-
-.. index:: Apple, AT&T, IBM, IETF, Internet Mail Consortium, Lucent, Siemens, Versit Consortium
-.. index:: vCard, vCalendar, iCalendar
-
-The *vCard* and *vCalendar* specifications were originally developed by the
-Versit Consortium, with contributions from Apple, IBM, AT&T/Lucent, and
-Siemens.  Their stewardship subsequently passed to the Internet Mail
-Consortium, before later being adopted by the IETF.
-
-Within the IETF, vCard versions 3.0 and 4.0, and a revised and expanded
-calendar specification renamed to *iCalendar* 2.0 have been published,
-together with numerous extensions, clarifications, and related standards.
-
-The two main standards (vCard and iCalendar) form a way to store and
-communicate information about contacts (names, addresses, phone numbers,
-etc), and scheduling (events, todos, etc).  They have been widely
-adopted for both storage and sharing of contact and calendar data.
-
-vCard
------
-
-.. index:: RFC-2426, RFC-6350
-
-vCard 2.1 was the final version published by Versit, and is still widely
-used.  vCard 3.0, published as IETF RFC-2426, is also widely used, however
-both versions are frequently extended by vendors or have implementation
-quirks in part due to unclear specification.  vCard 4.0 (IETF RFC-6350)
-attempted to resolve the issues of earlier versions, but in doing so
-necessarily broke some backward compatibility, and as a result, it has
-not been universally adopted.
-
-iCalendar
----------
-
-.. index:: CalDAV, RFC-2445
-
-vCalendar 1.0 was published by Versit, however it was not until the
-renamed iCalendar 2.0 (IETF RFC-2445) was published that wide-spread
-interoperability was possible.  Together with various extensions, and in
-particular the CalDAV specification for sharing calendars, iCalendar is
-now almost universally used for communication of calendaring data.
-
-Related Standards
------------------
-
-.. index:: JSON, microformat, XML
-
-Alongside vCard and iCalendar several different formats have been
-developed that reuse most (or all) of their semantic model, while
-adopting a different syntax.  XML and JSON variants of both standards
-exist, as well as HTML microformats.
-
-More recent work in the IETF is looking to revise the semantic models
-of vCard and iCalendar, proposing new standards that can be translated
-to and from vCard and iCalendar, but add additional functionality.
-
-vObject
--------
-
-The Python ``vobject`` module supports parsing vCard and iCalendar objects
-from strings (email attachments, files, etc) and generating those
-formatted strings from Python card and calendar objects.  It maintains
-compatibility with older versions of the specifications, and supports
-various quirks of widely-used implementations, simplifying real-life
-usage.
-
-.. index:: Open Source Applications Foundation, OSAF, Chandler, Eventable, GitHub, Apache
-.. index:: single: Harris, Jeffrey
-.. index:: single: Karim, Sameen
-
-``vobject`` was originally developed by Jeffrey Harris, working at the Open
-Source Applications Foundation (OSAF) on their Chandler project.  It was
-subsequently adopted by Sameen Karim at Eventable, before passing to
-community maintenance.  The source code is freely available under the
-Apache 2.0 license, and developed in a public repository at GitHub.
 
 
 .. #####################################################################
@@ -428,11 +346,243 @@ of the package.
 
 .. #####################################################################
 
+Calendars and Cards
+===================
+
+.. index:: Apple, AT&T, IBM, IETF, Internet Mail Consortium, Lucent, Siemens, Versit Consortium
+.. index:: vCard, vCalendar, iCalendar
+
+The *vCard* and *vCalendar* specifications were originally developed by the
+Versit Consortium, with contributions from Apple, IBM, AT&T/Lucent, and
+Siemens.  Their stewardship subsequently passed to the Internet Mail
+Consortium, before later being adopted by the IETF.
+
+Within the IETF, vCard versions 3.0 and 4.0, and a revised and expanded
+calendar specification renamed to *iCalendar* 2.0 have been published,
+together with numerous extensions, clarifications, and related standards.
+
+The two main standards (vCard and iCalendar) form a way to store and
+communicate information about contacts (names, addresses, phone numbers,
+etc), and scheduling (events, todos, etc).  They have been widely
+adopted for both storage and sharing of contact and calendar data.
+
+vCard
+-----
+
+.. index:: RFC-2426, RFC-6350
+
+vCard 2.1 was the final version published by Versit, and is still widely
+used.  vCard 3.0, published as IETF RFC-2426, is also widely used, however
+both versions are frequently extended by vendors or have implementation
+quirks in part due to unclear specification.  vCard 4.0 (IETF RFC-6350)
+attempted to resolve the issues of earlier versions, but in doing so
+necessarily broke some backward compatibility, and as a result, it has
+not been universally adopted.
+
+iCalendar
+---------
+
+.. index:: CalDAV, RFC-2445
+
+vCalendar 1.0 was published by Versit, however it was not until the
+renamed iCalendar 2.0 (IETF RFC-2445) was published that wide-spread
+interoperability was possible.  Together with various extensions, and in
+particular the CalDAV specification for sharing calendars, iCalendar is
+now almost universally used for communication of calendaring data.
+
+Related Standards
+-----------------
+
+.. index:: JSON, microformat, XML
+
+Alongside vCard and iCalendar several different formats have been
+developed that reuse most (or all) of their semantic model, while
+adopting a different syntax.  XML and JSON variants of both standards
+exist, as well as HTML microformats.
+
+More recent work in the IETF is looking to revise the semantic models
+of vCard and iCalendar, proposing new standards that can be translated
+to and from vCard and iCalendar, but add additional functionality.
+
+vObject
+-------
+
+The Python ``vobject`` module supports parsing vCard and iCalendar objects
+from strings (email attachments, files, etc) and generating those
+formatted strings from Python card and calendar objects.  It maintains
+compatibility with older versions of the specifications, and supports
+various quirks of widely-used implementations, simplifying real-life
+usage.
+
+.. index:: Open Source Applications Foundation, OSAF, Chandler, Eventable, GitHub, Apache
+.. index:: single: Harris, Jeffrey
+.. index:: single: Karim, Sameen
+
+``vobject`` was originally developed by Jeffrey Harris, working at the Open
+Source Applications Foundation (OSAF) on their Chandler project.  It was
+subsequently adopted by Sameen Karim at Eventable, before passing to
+community maintenance.  The source code is freely available under the
+Apache 2.0 license, and developed in a public repository at GitHub.
+
+Model
+-----
+
+.. index:: MIME, email
+
+*iCalendar* and *vCard* are both Multipurpose Internet Mail Extension
+(MIME) *profiles*.  Originally designed as a way to attach files to
+emails, the MIME standards include profiles for various types of
+things that are attached to emails from files, including calendar
+events and contacts, allowing email clients to understand what they
+are, and how to decode them.
+
+Over time, the use of MIME types and their encoding/decoding standards
+has extended beyond email, particularly to web browsers, and to
+operating systems in general, where the concept of a "default
+application" for a MIME type is used to open downloaded files.
+
+.. index:: JSON, XML
+
+*iCalendar* and *vCard* share a MIME syntax and basic encoding
+mechanism that is worth explaining up front because it's a little
+different to more recent alternatives such as JSON or XML.
+
+.. index:: enclosure, component, content line, parameter, value
+
+The major elements of the model are:
+
+* Enclosure
+* Components
+* Content Lines
+* Parameters
+* Values
+
+Each of these is discussed in detail below.  It's not *necessary* to
+understand the full detail of these elements, but you will need at
+least an overview to work with the ``vobject`` API.
+
+Enclosure
+~~~~~~~~~
+
+A MIME *enclosure* (for example, an ``.ics`` file) is an ordered
+sequence of octets, formatted in accordance with a standard MIME
+profile.  For the *iCalendar* and *vCard* profiles, the MIME
+enclosure's contents can be identified in one of two ways: using
+``PROFILE`` or using ``BEGIN`` and ``END``.
+
+When using ``PROFILE``, only one object can be encoded within the MIME
+enclosure.  The octet stream contains an initial text line beginning
+with "``PROFILE``" that defines the type of the object described by
+the following lines.  All lines in the MIME enclosure refer to a single
+object of the profile type.
+
+More commonly, using ``BEGIN`` and ``END`` allows multiple objects to
+be encoded into a single MIME enclosure.  This is usually used for
+both *iCalendar* and *vCard*, but the ``PROFILE`` format is also
+supported by ``vobject``.
+
+Component
+~~~~~~~~~
+
+Within the enclosure then, one or more objects are encoded.  Each
+object is called a *component* which represents a complete entity: a
+person, an event, a journal entry, a timezone, etc.  Components are
+described by a set of properties possibly including other nested
+components.
+
+The type of the component is identified by either the ``PROFILE`` or
+the ``BEGIN`` / ``END`` lines, for example like:
+
+.. code-block::
+
+   BEGIN:VCARD
+   ...
+   END:VCARD
+
+The component types used by the *iCalendar* and *vCard* standards
+include:
+
+* ``VCALENDAR``
+* ``VEVENT``
+* ``VTODO``
+* ``VJOURNAL``
+* ``VTIMEZONE``
+* ``VFREEBUSY``
+* ``VALARM``
+* ``VCARD``
+
+Content Line
+~~~~~~~~~~~~
+
+A MIME enclosure exists as a sequence of octets (bytes).  These octets
+represent characters, using a specified *character encoding* --
+typically UTF-8 in modern usage, but possibly ASCII, or other
+language-specific encodings, depending on the source application.
+
+That sequence of characters is broken into *physical lines* by the
+character pair ``CRLF``: a *Carriage Return*, followed by a *Line
+Feed*.  The strings of characters separated by ``CRLF`` pairs are the
+physical lines.
+
+According to the specification, physical lines should not exceed 80
+octets, including the ``CRLF``.  Because the content itself might
+exceed that length, encoding first breaks the content into shorter
+lines (called *folding*), and decoding must reassemble the content
+from those broken up physical lines (called *unfolding*).
+
+The unfolded content, possibly longer than 80 octets, is called a
+*content line*.  Each content line within a component describes a
+property of that component.
+
+A content line has a name, usually written in ALL CAPS style.  It may
+also have zero or more *parameters*, and finally a *value*.
+
+Parameters
+~~~~~~~~~~
+
+The optional parameters of a content line either describe its encoding,
+or clarify its meaning within the component.  Parameters have a name,
+and optional set of parameter values.
+
+Example parameters include things like the BASE64 encoding of a
+contact's photgraph, or the type of a phone number: voice, fax, work,
+home, etc.
+
+Some properties are represented just by their name, like ``JPEG``,
+while others have one or more parameter values, like ``TZID=EST``.
+
+Value
+~~~~~
+
+Finally, the content line will have a value.  The formatting of the
+value depends upon what property type is represents, and it might be
+either a single simple type, a sequence, or a complex multi-part
+object.
+
+For exmaple, the ``VERSION`` property has a single, string-type value.
+
+.. code-block::
+
+   VERSION:3.0
+
+But a *vCard* name property has a complex type value, with five
+different attributes, separated by semi-colons:
+
+.. code-block::
+
+   N:Public;John;Quinlan;Mr;Esq
+
+The types of values for each standard property are defined by the
+standard documents, and implemented by ``vobject``.
+
+
+.. #####################################################################
+
 Parsing
 =======
 
-To parse one top level component from an existing iCalendar stream or
-string, use the readOne function:
+To parse one top level component from an existing *iCalendar* or
+*vCard* stream or string, use the ``readOne()`` function:
 
 .. code-block:: python
     :linenos:
@@ -441,7 +591,8 @@ string, use the readOne function:
     >>> parsedCal.vevent.dtstart.value
     datetime.datetime(2006, 2, 16, 0, 0, tzinfo=tzutc())
 
-Similarly, readComponents is a generator yielding one top level component at a time from a stream or string.
+Similarly, ``readComponents()`` is a generator yielding one top level
+component at a time from a stream or string.
 
 .. code-block:: python
     :linenos:
@@ -480,8 +631,9 @@ Parsing vCards is very similar.
     [<EMAIL{'TYPE': ['INTERNET']}jeffrey@osafoundation.org>,
      <EMAIL{'TYPE': ['INTERNET']}jeffery@example.org>]
 
-Just like with iCalendar example above readComponents will yield a
-generator from a stream or string containing multiple vCards objects.
+Just like with the *iCalendar* example above, ``readComponents()`` will
+yield a generator from a stream or string containing multiple *vCard*
+objects.
 
 .. code-block:: python
     :linenos:
@@ -494,39 +646,6 @@ generator from a stream or string containing multiple vCards objects.
 
 Creating Objects
 ================
-
-Model
------
-
-Both iCalendar and vCard share a syntax and basic semantic model that is
-worth explaining up front because it's a little unusual.
-
-.. index:: component, content line, object, parameter, value
-
-The major components of the model are:
-
-* Object
-* Component
-* Content Line
-* Parameter
-* Value
-
-An *Object* represents a complete entity: a person, an event, a journal
-entry, etc.  Objects are comprised of one or more *Components*.
-
-A Component has a name, written in ALL CAPS style.  It may also have
-zero or more *Parameters*, and finally a *Value*.  Parameters have a
-name, and optional value.
-
-A *Content Line* is used to hold the *Value* of a *Component*.  When
-generating an encoded object, the content line is formatted in a particular
-way, and handle the quoting of reserved characters, line wrapping, data
-encoding, etc.
-
-While the iCalendar, vCard, and their various extension specifications
-define the standard components of the calendar and contact objects, the
-model is extensible, and vendors may add additional components and
-parameters, and do so often in practice.
 
 iCalendar
 ---------
@@ -550,7 +669,7 @@ the v1.0 Versit standard).
 An iCalendar stream (eg. an .ics file) is comprised of a sequence of
 these objects.
 
-Within vObject, each standard object has a defined *behavior* class,
+Within vobject, each standard object has a defined *behavior* class,
 that specifies its allowed cardinality, base data type, ability to
 convert to/from native Python data types, etc.  These behaviors are
 maintained in a registry within the vobject module, and identified by
