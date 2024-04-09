@@ -2,7 +2,8 @@ from __future__ import print_function
 
 from optparse import OptionParser
 
-from .base import Component, getBehavior, newFromBehavior, readOne
+import vobject
+
 
 """
 Compare VTODOs and VEVENTs in two iCalendar sources.
@@ -98,8 +99,8 @@ def diff(left, right):
         if body is None:
             return None
         else:
-            c = Component(name)
-            c.behavior = getBehavior(name)
+            c = vobject.base.Component(name)
+            c.behavior = vobject.base.getBehavior(name)
             c.isNative = True
             return c
 
@@ -117,7 +118,7 @@ def diff(left, right):
 
         for key in leftChildKeys:
             rightList = rightComp.contents.get(key, [])
-            if isinstance(leftComp.contents[key][0], Component):
+            if isinstance(leftComp.contents[key][0], vobject.base.Component):
                 compDifference = processComponentLists(leftComp.contents[key],
                                                        rightList)
                 if len(compDifference) > 0:
@@ -129,7 +130,7 @@ def diff(left, right):
 
         for key in rightChildKeys:
             if key not in leftChildKeys:
-                if isinstance(rightComp.contents[key][0], Component):
+                if isinstance(rightComp.contents[key][0], vobject.base.Component):
                     differentComponents[key] = ([], rightComp.contents[key])
                 else:
                     differentContentLines.append(([], rightComp.contents[key]))
@@ -198,14 +199,12 @@ def main():
         deleteExtraneous(cal2, ignore_dtstamp=ignore_dtstamp)
         prettyDiff(cal1, cal2)
 
-version = "0.1"
-
 
 def getOptions():
     ##### Configuration options #####
 
     usage = "usage: %prog [options] ics_file1 ics_file2"
-    parser = OptionParser(usage=usage, version=version)
+    parser = OptionParser(usage=usage, version=vobject.VERSION)
     parser.set_description("ics_diff will print a comparison of two iCalendar files ")
 
     parser.add_option("-i", "--ignore-dtstamp", dest="ignore", action="store_true",

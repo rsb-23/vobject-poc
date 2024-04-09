@@ -80,6 +80,10 @@ from .base import newFromBehavior, readOne, readComponents
 from . import icalendar, vcard
 
 
+# Package version
+VERSION = "0.9.8"
+
+
 def iCalendar():
     return newFromBehavior('vcalendar', '2.0')
 
