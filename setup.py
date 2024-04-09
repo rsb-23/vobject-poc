@@ -19,7 +19,7 @@ Recent changes
        implementations
 
 For older changes, see
-   - http://py-vobject.github.io/vobject/#release-history or
+   - http://py-vobject.github.io/#release-history or
    - http://vobject.skyhouseconsulting.com/history.html
 """
 
@@ -35,8 +35,8 @@ setup(name = "vobject",
       maintainer_email="davida@pobox.com",
       license = "Apache",
       zip_safe = True,
-      url = "http://py-vobject.github.io/vobject/",
-      download_url = 'https://github.com/py-vobject/vobject/tarball/0.9.7',
+      url = "http://py-vobject.github.io/",
+      download_url = 'https://github.com/py-vobject/vobject/releases',
       bugtrack_url = "https://github.com/py-vobject/vobject/issues",
       entry_points = {
             'console_scripts': [
