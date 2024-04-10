@@ -121,11 +121,10 @@ Or using their names to access them directly as attributes:
     3.0
     >>>
 
-When accessed
-Confusingly, when accessed as directly named attributes of the parsed
-item, singleton properties *aren't* a list: you can access their valu
-If the child has parameters, in addition to its value, they are available
-as a dictionary:
+When accessed as directly named attributes of the parsed item,
+singleton properties *aren't* a list: you can access their valu If the
+child has parameters, in addition to its value, they are available as
+a dictionary:
 
 .. code-block:: python
     :linenos:
