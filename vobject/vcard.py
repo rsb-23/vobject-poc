@@ -15,7 +15,7 @@ logger.name = __name__
 # ------------------------ vCard structs ---------------------------------------
 
 
-class Name(object):
+class Name:
     def __init__(self, family="", given="", additional="", prefix="", suffix=""):
         """
         Each name attribute can be a string or a list of strings.
@@ -38,7 +38,7 @@ class Name(object):
         return " ".join(self.toString(getattr(self, val)) for val in eng_order)
 
     def __repr__(self):
-        return "<Name: {0!s}>".format(self.__str__())
+        return f"<Name: {str(self)}>"
 
     def __eq__(self, other):
         try:
@@ -53,7 +53,7 @@ class Name(object):
             return False
 
 
-class Address(object):
+class Address:
     def __init__(self, street="", city="", region="", code="", country="", box="", extended=""):
         """
         Each name attribute can be a string or a list of strings.

@@ -71,7 +71,7 @@ class Win32tz(datetime.tzinfo):
             return not (dstoff <= dt.replace(tzinfo=None) < dston)
 
     def __repr__(self):
-        return "<win32tz - {0!s}>".format(self.data.display)
+        return f"<win32tz - {self.data.display}>"
 
 
 @deprecated
@@ -89,7 +89,7 @@ def pick_nth_weekday(year, month, dayofweek, hour, minute, whichweek):
             return dt
 
 
-class Win32tzData(object):
+class Win32tzData:
     """Read a registry key for a timezone, expose its contents."""
 
     def __init__(self, path):

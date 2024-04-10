@@ -1,8 +1,9 @@
 from . import base
+from .vobject_error import ValidateError
 
 
 # ------------------------ Abstract class for behavior --------------------------
-class Behavior(object):
+class Behavior:
     """
     Behavior (validation, encoding, and transformations) for vobjects.
 
@@ -97,12 +98,12 @@ class Behavior(object):
                 if count.get(key, 0) < val[0]:
                     if raise_exception:
                         m = "{0} components must contain at least {1} {2}"
-                        raise base.ValidateError(m.format(cls.name, val[0], key))
+                        raise ValidateError(m.format(cls.name, val[0], key))
                     return False
                 if val[1] and count.get(key, 0) > val[1]:
                     if raise_exception:
                         m = "{0} components cannot contain more than {1} {2}"
-                        raise base.ValidateError(m.format(cls.name, val[1], key))
+                        raise ValidateError(m.format(cls.name, val[1], key))
                     return False
             return True
         else:
@@ -113,7 +114,7 @@ class Behavior(object):
     def lineValidate(cls, line, raiseException, complainUnrecognized):
         """Examine a line's parameters and values, return True if valid."""
         # todo: remove used param line, raiseException, complainUnrecognized
-        print(line, raiseException, complainUnrecognized)
+        # print(line, raiseException, complainUnrecognized)
         return True
 
     @classmethod

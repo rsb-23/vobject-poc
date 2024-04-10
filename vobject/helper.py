@@ -21,7 +21,7 @@ TAB = "\t"
 SPACEORTAB = SPACE + TAB
 
 
-# -----Deprecation decorator-----
+# -----Decorators-----
 
 
 def deprecated(func=None):
@@ -30,7 +30,8 @@ def deprecated(func=None):
 
     def camel_to_snake(name):
         s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
-        return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+        x = re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+        return x.replace("date_time", "datetime")
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -42,6 +43,19 @@ def deprecated(func=None):
         )
         warnings.simplefilter("default", DeprecationWarning)  # reset filter
         return func(*args, **kwargs)
+
+    return wrapper
+
+
+def test_case(func):
+    """This is a decorator logs inputs and outputs of a func"""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        logger.warning(func.__name__)
+        result = func(*args, **kwargs)
+        logger.warning(msg=f"{args}, {kwargs} : {result}")
+        return result
 
     return wrapper
 

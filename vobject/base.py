@@ -5,11 +5,10 @@ from __future__ import annotations
 import codecs
 import contextlib
 import copy
+import io
 import re
 import sys
 from datetime import date
-
-import six
 
 from .helper import CRLF, SPACEORTAB, backslashEscape, deprecated, indent_str, logger
 from .vobject_error import NativeError, ParseError, VObjectError
@@ -41,7 +40,7 @@ def to_basestring(s):
 # --------------------------------- Main classes -------------------------------
 
 
-class VBase(object):
+class VBase:
     """
     Base class for ContentLine and Component.
 
@@ -379,10 +378,10 @@ class ContentLine(VBase):
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr().encode("utf-8"))
 
     def __repr__(self):
-        return self.__str__()
+        return str(self)
 
     def __unicode__(self):
-        return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
+        return f"<{self.name}{self.params}{self.valueRepr()}>"
 
     @deprecated
     def prettyPrint(self, level=0, tabwidth=3) -> None:
@@ -632,12 +631,12 @@ class Component(VBase):
 
     def __str__(self):
         if self.name:
-            return "<{0}| {1}>".format(self.name, self.getSortedChildren())
+            return f"<{self.name}| {self.getSortedChildren()}>"
         else:
-            return "<*unnamed*| {0}>".format(self.getSortedChildren())
+            return f"<*unnamed*| {self.getSortedChildren()}>"
 
     def __repr__(self):
-        return self.__str__()
+        return str(self)
 
     @deprecated
     def prettyPrint(self, level=0, tabwidth=3):
@@ -797,7 +796,7 @@ def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
     Quoted-printable data will be decoded in the Behavior decoding phase.
 
     # We're leaving this test in for awhile, because the unittest was ugly and dumb.
-    >>> from six import StringIO
+    >>> from io import StringIO
     >>> f=StringIO(testLines)
     >>> for _n, l in enumerate(getLogicalLines(f)):
     ...     print("Line %s: %s" % (_n, l[0]))
@@ -820,7 +819,7 @@ def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
 
     else:
         quotedPrintable = False
-        newbuffer = six.StringIO
+        newbuffer = io.StringIO
         logicalLine = newbuffer()
         lineNumber = 0
         lineStartNumber = 0
@@ -926,7 +925,7 @@ def defaultSerialize(obj, buf, lineLength):
     """
     Encode and fold obj and its children, write to buf or return a string.
     """
-    outbuf = buf or six.StringIO()
+    outbuf = buf or io.StringIO()
 
     if isinstance(obj, Component):
         groupString = f"{obj.group}." if obj.group else ""
@@ -943,7 +942,7 @@ def defaultSerialize(obj, buf, lineLength):
         if obj.behavior and not startedEncoded:
             obj.behavior.encode(obj)
 
-        s = six.StringIO()
+        s = io.StringIO()
 
         if obj.group is not None:
             s.write(f"{obj.group}.")
@@ -1001,7 +1000,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
     Generate one Component at a time from a stream.
     """
     if isinstance(streamOrString, basestring):
-        stream = six.StringIO(streamOrString)
+        stream = io.StringIO(streamOrString)
     else:
         stream = streamOrString
 

@@ -7,6 +7,7 @@ import sys
 import unittest
 
 import dateutil
+import pytz
 from dateutil.rrule import MONTHLY, WEEKLY, rrule, rruleset
 from dateutil.tz import tzutc
 
@@ -15,7 +16,6 @@ from vobject.base import ContentLine, ParseError
 from vobject.base import __behaviorRegistry as BehaviorRegistry
 from vobject.base import parseLine, readComponents, textLineToContentLine
 from vobject.change_tz import change_tz
-from vobject.helper import indent_str
 from vobject.icalendar import (
     MultiDateBehavior,
     PeriodBehavior,
@@ -26,7 +26,6 @@ from vobject.icalendar import (
     timedeltaToString,
     utc,
 )
-from vobject.vcard import toList
 
 behavior_registry = BehaviorRegistry
 two_hours = datetime.timedelta(hours=2)
@@ -267,9 +266,9 @@ class TestBehaviors(unittest.TestCase):
         self.assertEqual(str(behavior), "<class 'vobject.icalendar.VCalendar2'>")
         self.assertTrue(behavior.isComponent)
 
-        self.assertEqual(base.getBehavior("invalid_name"), None)
+        self.assertEqual(base.get_behavior("invalid_name"), None)
         # test for ContentLine (not a component)
-        non_component_behavior = base.getBehavior("RDATE")
+        non_component_behavior = base.get_behavior("RDATE")
         self.assertFalse(non_component_behavior.isComponent)
 
     def test_MultiDateBehavior(self):
@@ -628,10 +627,6 @@ class TestIcalendar(unittest.TestCase):
         """
         Serializing with timezones from pytz test
         """
-        try:
-            import pytz
-        except ImportError:
-            return self.skipTest("pytz not installed")  # NOQA
 
         # Avoid conflicting cached tzinfo from other tests
         def unregister_tzid(tzid):
@@ -788,9 +783,9 @@ class TestChangeTZ(unittest.TestCase):
     Tests for change_tz.change_tz
     """
 
-    class StubCal(object):
-        class StubEvent(object):
-            class Node(object):
+    class StubCal:
+        class StubEvent:
+            class Node:
                 def __init__(self, value):
                     self.value = value
 
@@ -928,19 +923,5 @@ class TestCompatibility(unittest.TestCase):
         return
 
 
-class TestVcardFunc(unittest.TestCase):
-
-    def test_to_list(self):
-        assert toList("") == [""]
-        assert toList("Knudson") == ["Knudson"]
-
-
-class TestHelper(unittest.TestCase):
-
-    def test_indent_str(self):
-        assert indent_str(level=2) == " " * 6
-        assert indent_str(level=1, tabwidth=4) == " " * 4
-
-
 if __name__ == "__main__":
-    unittest.main(buffer=True)
+    unittest.main(buffer=True, failfast=True)

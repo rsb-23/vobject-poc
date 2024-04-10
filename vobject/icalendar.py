@@ -5,37 +5,20 @@
 import base64
 import contextlib
 import datetime
+import io
 import logging
 import random  # for generating a UID
 import socket
 import string
 from functools import partial
 
-import six
+import pytz
 from dateutil import rrule, tz
 
 from . import behavior
-from .base import Component, ContentLine, foldOneLine, logger, register_behavior
-from .helper import backslash_escape, indent_str
+from .base import Component, ContentLine, foldOneLine, register_behavior
+from .helper import backslash_escape, deprecated, indent_str, logger
 from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
-
-try:
-    import pytz
-except ImportError:
-
-    class Pytz:
-        """fake pytz module (pytz is not required)"""
-
-        class AmbiguousTimeError(Exception):
-            """pytz error for ambiguous times
-            during transition daylight->standard"""
-
-        class NonExistentTimeError(Exception):
-            """pytz error for non-existent times
-            during transition standard->daylight"""
-
-    pytz = Pytz  # keeps quantifiedcode happy
-
 
 logger.name = __name__
 # ------------------------------- Constants ------------------------------------
@@ -58,7 +41,7 @@ def toUnicode(s):
     """
     Take a string or unicode, turn it into unicode, decoding as utf-8
     """
-    if isinstance(s, six.binary_type):
+    if isinstance(s, bytes):
         s = s.decode("utf-8")
     return s
 
@@ -77,14 +60,9 @@ def getTzid(tzid, smart=True):
     _tz = __tzidMap.get(toUnicode(tzid))
     if smart and tzid and not _tz:
         try:
-            from pytz import UnknownTimeZoneError, timezone  # noqa - maybe moved to top
-
-            try:
-                _tz = timezone(tzid)
-                registerTzid(toUnicode(tzid), _tz)
-            except UnknownTimeZoneError as e:
-                logging.error(e)
-        except ImportError as e:
+            _tz = pytz.timezone(tzid)
+            registerTzid(toUnicode(tzid), _tz)
+        except pytz.UnknownTimeZoneError as e:
             logging.error(e)
     return _tz
 
@@ -114,7 +92,7 @@ class TimezoneComponent(Component):
         """
         Accept an existing Component or a tzinfo class.
         """
-        super(TimezoneComponent, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.isNative = True
         # hack to make sure a behavior is assigned
         if self.behavior is None:
@@ -139,7 +117,7 @@ class TimezoneComponent(Component):
         # workaround for dateutil failing to parse some experimental properties
         good_lines = ("rdate", "rrule", "dtstart", "tzname", "tzoffsetfrom", "tzoffsetto", "tzid")
         # serialize encodes as utf-8, cStringIO will leave utf-8 alone
-        buffer = six.StringIO()
+        buffer = io.StringIO()
         # allow empty VTIMEZONEs
         if len(self.contents) == 0:
             return None
@@ -322,10 +300,10 @@ class TimezoneComponent(Component):
                         )
                         endDate = du_rule[0]
                     endDate = endDate.replace(tzinfo=utc) - rule["offsetfrom"]
-                    endString = f";UNTIL={dateTimeToString(endDate)}"
+                    endString = f";UNTIL={datetime_to_string(endDate)}"
                 else:
                     endString = ""
-                new_rule = "FREQ=YEARLY{0!s};BYMONTH={1!s}{2!s}".format(dayString, rule["month"], endString)
+                new_rule = f"FREQ=YEARLY{dayString};BYMONTH={rule['month']}{endString}"
 
                 comp.add("rrule").value = new_rule
 
@@ -360,18 +338,22 @@ class TimezoneComponent(Component):
                 if tzinfo.dst(dt) == notDST:
                     return toUnicode(tzinfo.tzname(dt))
         # there was no standard time in 2000!
-        raise VObjectError("Unable to guess TZID for tzinfo {0!s}".format(tzinfo))
+        raise VObjectError(f"Unable to guess TZID for tzinfo {tzinfo}")
 
     def __str__(self):
-        return "<VTIMEZONE | {0}>".format(getattr(self, "tzid", "No TZID"))
+        return f"<VTIMEZONE | {getattr(self, 'tzid', 'No TZID')}>"
 
     def __repr__(self):
         return self.__str__()
 
+    @deprecated
     def prettyPrint(self, level=0, tabwidth=3):
+        self.pretty_print(level=level, tabwidth=tabwidth)
+
+    def pretty_print(self, level=0, tabwidth=3):
         pre = indent_str(level=level, tabwidth=tabwidth)
-        print(pre, self.name)
-        print(pre, f"TZID: {self.tzid}\n\n")
+        logger.debug(f"{pre} {self.name}")
+        logger.debug(f"{pre} TZID: {self.tzid}\n\n")
 
 
 # noinspection PyUnresolvedReferences
@@ -512,10 +494,8 @@ class RecurringComponent(Component):
                     added = False
                     # rlist = rruleset._rrule if name == 'rrule' else rruleset._rdate
                     try:
-                        # dateutils does not work with all-day
-                        # (datetime.date) items so we need to convert to a
-                        # datetime.datetime (which is what dateutils
-                        # does internally)
+                        # dateutils does not work with all-day (datetime.date) items so we need to convert to a
+                        # datetime.datetime (which is what dateutils does internally)
                         if not isinstance(dtstart, datetime.datetime):
                             adddtstart = datetime.datetime.fromordinal(dtstart.toordinal())
                         else:
@@ -537,8 +517,7 @@ class RecurringComponent(Component):
                                 added = False
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
-                        added = False
-                    print(added)  # todo: remove unused vars
+                        added = False  # noqa
 
         return rruleset
 
@@ -558,7 +537,7 @@ class RecurringComponent(Component):
             untilSerialize = dateToString
         else:
             # make sure to convert time zones to UTC
-            untilSerialize = partial(dateTimeToString, convertToUTC=True)
+            untilSerialize = partial(datetime_to_string, convertToUTC=True)
 
         for name in DATESANDRULES:
             if name in self.contents:
@@ -574,7 +553,7 @@ class RecurringComponent(Component):
                     self.add(name).value = setlist
             elif name in RULENAMES:
                 for rule in setlist:
-                    buf = six.StringIO()
+                    buf = io.StringIO()
                     buf.write("FREQ=")
                     buf.write(FREQUENCIES[rule._freq])
 
@@ -736,9 +715,9 @@ class RecurringBehavior(VCalendarComponentBehavior):
         if not hasattr(obj, "uid"):
             rand = int(random.random() * 100000)
             now = datetime.datetime.now(utc)
-            now = dateTimeToString(now)
+            now = datetime_to_string(now)
             host = socket.gethostname()
-            obj.add(ContentLine("UID", [], "{0} - {1}@{2}".format(now, rand, host)))
+            obj.add(ContentLine("UID", [], f"{now} - {rand}@{host}"))
 
         if not hasattr(obj, "dtstamp"):
             now = datetime.datetime.now(utc)
@@ -789,7 +768,7 @@ class DateTimeBehavior(behavior.Behavior):
         assert isinstance(obj.value, datetime.datetime)
 
         tzid = TimezoneComponent.registerTzinfo(obj.value.tzinfo)
-        obj.value = dateTimeToString(obj.value, cls.forceUTC)
+        obj.value = datetime_to_string(obj.value, cls.forceUTC)
         if not cls.forceUTC and tzid is not None:
             obj.tzid_param = tzid
         if obj.params.get("X-VOBJ-ORIGINAL-TZID"):
@@ -844,7 +823,7 @@ class DateOrDateTimeBehavior(behavior.Behavior):
             return DateTimeBehavior.transformFromNative(obj)
         obj.isNative = False
         obj.value_param = "DATE"
-        obj.value = dateToString(obj.value)
+        obj.value = date_to_string(obj.value)
         return obj
 
 
@@ -1021,17 +1000,16 @@ class VCalendar2(VCalendarComponentBehavior):
         if validate:
             cls.validate(obj, raiseException=True)
         if obj.isNative:
-            transformed = obj.transformFromNative()
+            # transformed = obj.transformFromNative() # not used
             undoTransform = True
         else:
-            transformed = obj
+            # transformed = obj # not used
             undoTransform = False
-        out = None
-        print(transformed, out)  # todo: remove unused vars
-        outbuf = buf or six.StringIO()
+
+        outbuf = buf or io.StringIO()
         groupString = "" if obj.group is None else f"{obj.group}."
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}BEGIN:{obj.name}", lineLength)
 
         try:
             first_props = [
@@ -1042,8 +1020,7 @@ class VCalendar2(VCalendarComponentBehavior):
             ]
         except Exception as e:  # noqa
             logger.critical(e)
-            first_props = first_components = []
-            # first_components = []
+            first_props, first_components = [], []
 
         prop_keys = sorted(
             [k for k in obj.contents.keys() if k not in first_props and not isinstance(obj.contents[k][0], Component)]
@@ -1059,7 +1036,7 @@ class VCalendar2(VCalendarComponentBehavior):
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}END:{obj.name}", lineLength)
         out = buf or outbuf.getvalue()
         if undoTransform:
             obj.transformToNative()
@@ -1722,28 +1699,28 @@ def timeToString(dateOrDateTime):
     return dateToString(dateOrDateTime)
 
 
+@deprecated
 def dateToString(date):
-    year = numToDigits(date.year, 4)
-    month = numToDigits(date.month, 2)
-    day = numToDigits(date.day, 2)
-    return year + month + day
+    return date_to_string(date)
 
 
+def date_to_string(date):
+    return date.strftime("%Y%m%d")
+
+
+@deprecated
 def dateTimeToString(dateTime, convertToUTC=False) -> str:
+    return datetime_to_string(dateTime, convertToUTC)
+
+
+def datetime_to_string(dateTime, convertToUTC=False) -> str:
     """
     Ignore tzinfo unless convertToUTC.  Output string.
     """
     if dateTime.tzinfo and convertToUTC:
         dateTime = dateTime.astimezone(utc)
 
-    datestr = "{0}{1}{2}T{3}{4}{5}".format(
-        numToDigits(dateTime.year, 4),
-        numToDigits(dateTime.month, 2),
-        numToDigits(dateTime.day, 2),
-        numToDigits(dateTime.hour, 2),
-        numToDigits(dateTime.minute, 2),
-        numToDigits(dateTime.second, 2),
-    )
+    datestr = dateTime.strftime("%Y%m%dT%H%M%S")
     if tzinfo_eq(dateTime.tzinfo, utc):
         datestr += "Z"
     return datestr
@@ -1760,11 +1737,11 @@ def deltaToOffset(delta):
 
 
 def periodToString(period, convertToUTC=False):
-    txtstart = dateTimeToString(period[0], convertToUTC)
+    txtstart = datetime_to_string(period[0], convertToUTC)
     if isinstance(period[1], datetime.timedelta):
         txtend = timedeltaToString(period[1])
     else:
-        txtend = dateTimeToString(period[1], convertToUTC)
+        txtend = datetime_to_string(period[1], convertToUTC)
     return f"{txtstart}/{txtend}"
 
 
@@ -1918,7 +1895,7 @@ def stringToDurations(s, strict=False):
                 current = current + char  # update this part when updating "read field"
             else:
                 state = "error"
-                error("got unexpected character {0} reading in duration: {1}".format(char, s))
+                error(f"got unexpected character {char} reading in duration: {s}")
 
         elif state == "read field":
             if char in string.digits:
