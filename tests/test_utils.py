@@ -1,5 +1,5 @@
 import datetime as dt
-from unittest import TestCase, main
+from unittest import TestCase
 
 from vobject.helper import indent_str
 from vobject.icalendar import date_to_string, datetime_to_string
@@ -34,7 +34,3 @@ class TestAllFuncs(TestCase):
         }
         for inp, out in tc.items():
             self.assertEqual(datetime_to_string(*inp), out)
-
-
-if __name__ == "__main__":
-    main(buffer=True, failfast=True)

@@ -6,6 +6,6 @@ RUN apt-get update && apt-get install -y git
 RUN pip install --upgrade pip
 RUN pip install pre-commit
 
-COPY ./extras/pyproject.toml /app/pyproject.toml
+COPY ./scripts/checks.sh /app/checks.sh
 
-CMD ["./scripts/checks.sh"]
+CMD ["./checks.sh"]

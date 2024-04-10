@@ -8,12 +8,14 @@ import datetime
 import io
 import logging
 import random  # for generating a UID
+import re
 import socket
 import string
 from functools import partial
 
 import pytz
 from dateutil import rrule, tz
+from dateutil.tz import tzutc
 
 from . import behavior
 from .base import Component, ContentLine, foldOneLine, register_behavior
@@ -272,9 +274,9 @@ class TimezoneComponent(Component):
                 if rule["name"] is not None:
                     comp.add("tzname").value = rule["name"]
                 line = comp.add("tzoffsetto")
-                line.value = deltaToOffset(rule["offset"])
+                line.value = delta_to_offset(rule["offset"])
                 line = comp.add("tzoffsetfrom")
-                line.value = deltaToOffset(rule["offsetfrom"])
+                line.value = delta_to_offset(rule["offsetfrom"])
 
                 if rule["plus"] is not None:
                     num = rule["plus"]
@@ -507,14 +509,10 @@ class RecurringComponent(Component):
                                 added = True
                                 if rruleset._rrule[-1]._count is not None:
                                     rruleset._rrule[-1]._count -= 1
-                            else:
-                                added = False
                         elif name == "rdate":
                             if rruleset._rdate[0] != adddtstart:
                                 rruleset.rdate(adddtstart)
                                 added = True
-                            else:
-                                added = False
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
                         added = False  # noqa
@@ -851,11 +849,11 @@ class MultiDateBehavior(behavior.Behavior):
         valueParam = getattr(obj, "value_param", "DATE-TIME").upper()
         valTexts = obj.value.split(",")
         if valueParam == "DATE":
-            obj.value = [stringToDate(x) for x in valTexts]
+            obj.value = [string_to_date(x) for x in valTexts]
         elif valueParam == "DATE-TIME":
             obj.value = [stringToDateTime(x, tzinfo) for x in valTexts]
         elif valueParam == "PERIOD":
-            obj.value = [stringToPeriod(x, tzinfo) for x in valTexts]
+            obj.value = [string_to_period(x, tzinfo) for x in valTexts]
         return obj
 
     @staticmethod
@@ -1465,7 +1463,7 @@ class Duration(behavior.Behavior):
         obj.value = obj.value
         if obj.value == "":
             return obj
-        deltalist = stringToDurations(obj.value)
+        deltalist = string_to_durations(obj.value)
         # When can DURATION have multiple durations?  For now:
         if len(deltalist) == 1:
             obj.value = deltalist[0]
@@ -1566,7 +1564,7 @@ class PeriodBehavior(behavior.Behavior):
             obj.value = []
             return obj
         tzinfo = getTzid(getattr(obj, "tzid_param", None))
-        obj.value = [stringToPeriod(x, tzinfo) for x in obj.value.split(",")]
+        obj.value = [string_to_period(x, tzinfo) for x in obj.value.split(",")]
         return obj
 
     @classmethod
@@ -1650,13 +1648,7 @@ def numToDigits(num, places):
     """
     Helper, for converting numbers to textual digits.
     """
-    s = str(num)
-    if len(s) < places:
-        return ("0" * (places - len(s))) + s
-    elif len(s) > places:
-        return s[len(s) - places :]
-    else:
-        return s
+    return str(num).rjust(places, "0")
 
 
 def timedeltaToString(delta):
@@ -1726,7 +1718,8 @@ def datetime_to_string(dateTime, convertToUTC=False) -> str:
     return datestr
 
 
-def deltaToOffset(delta):
+@deprecated
+def deltaToOffset(delta: datetime.timedelta):
     absDelta = abs(delta)
     hours = int(absDelta.seconds / 3600)
     hoursString = numToDigits(hours, 2)
@@ -1734,6 +1727,13 @@ def deltaToOffset(delta):
     minutesString = numToDigits(minutes, 2)
     signString = "+" if absDelta == delta else "-"
     return signString + hoursString + minutesString
+
+
+def delta_to_offset(delta: datetime.timedelta) -> str:
+    absDelta = abs(delta)
+    signString = "+" if absDelta == delta else "-"
+    tmp_time = datetime.datetime(2020, 1, 1) + absDelta
+    return signString + tmp_time.strftime("%H%M")
 
 
 def periodToString(period, convertToUTC=False):
@@ -1750,11 +1750,13 @@ def isDuration(s: str):
     return "P" in s[:2].upper()
 
 
+@deprecated
 def stringToDate(s):
-    year = int(s[:4])
-    month = int(s[4:6])
-    day = int(s[6:8])
-    return datetime.date(year, month, day)
+    return string_to_date(s)
+
+
+def string_to_date(s: str) -> datetime.date:
+    return datetime.datetime.strptime(s, "%Y%m%d").date()
 
 
 def stringToDateTime(s, tzinfo=None):
@@ -1762,20 +1764,20 @@ def stringToDateTime(s, tzinfo=None):
     Returns datetime.datetime object.
     """
     try:
-        year = int(s[:4])
-        month = int(s[4:6])
-        day = int(s[6:8])
-        hour = int(s[9:11])
-        minute = int(s[11:13])
-        second = int(s[13:15])
+        _datetime = datetime.datetime.strptime(s[:15], "%Y%m%dT%H%M%S")
         if len(s) > 15 and s[15] == "Z":
-            tzinfo = getTzid("UTC")
+            tzinfo = tzutc()  # getTzid("UTC")
     except Exception as e:
         raise ParseError(f"'{s!s}' is not a valid DATE-TIME") from e
-    year = year and year or 2000
+
+    year = _datetime.year and _datetime.year or 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # PyTZ case
-        return tzinfo.localize(datetime.datetime(year, month, day, hour, minute, second))
-    return datetime.datetime(year, month, day, hour, minute, second, 0, tzinfo)
+        return tzinfo.localize(
+            datetime.datetime(year, _datetime.month, _datetime.day, _datetime.hour, _datetime.minute, _datetime.second)
+        )
+    return datetime.datetime(
+        year, _datetime.month, _datetime.day, _datetime.hour, _datetime.minute, _datetime.second, tzinfo=tzinfo
+    )
 
 
 # DQUOTE included to work around iCal's penchant for backslash escaping it,
@@ -1849,6 +1851,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
             error(f"unknown state: '{state!s}' reached in {s!s}")
 
 
+@deprecated
 def stringToDurations(s, strict=False):
     """
     Returns list of timedelta objects.
@@ -1953,6 +1956,22 @@ def stringToDurations(s, strict=False):
             error(f"unknown state: '{state}' reached in {s}")
 
 
+def string_to_durations(s: str) -> list:
+    interval_map = {"W": "weeks", "D": "days", "H": "hours", "M": "minutes", "S": "seconds"}
+
+    def parse_duration(duration: str):
+        _sign = -1 if duration[0] == "-" else 1
+        params = {}
+        for part in re.findall(r"\d{0,2}[PTWDHMS]{0,2}", duration):
+            if part and part[-1] in interval_map:
+                params[interval_map[part[-1]]] = int(part[:-1])
+        if not params:
+            raise ParseError("Invalid duration string")
+        return _sign * datetime.timedelta(**params)
+
+    return [parse_duration(x.strip()) for x in s.strip().split(",")]
+
+
 def parseDtstart(contentline, allowSignatureMismatch=False):
     """
     Convert a contentline's value into a date or date-time.
@@ -1964,26 +1983,32 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
     tzinfo = getTzid(getattr(contentline, "tzid_param", None))
     valueParam = getattr(contentline, "value_param", "DATE-TIME").upper()
     if valueParam == "DATE":
-        return stringToDate(contentline.value)
+        return string_to_date(contentline.value)
     elif valueParam == "DATE-TIME":
         try:
             return stringToDateTime(contentline.value, tzinfo)
         except ParseError:
             if allowSignatureMismatch:
-                return stringToDate(contentline.value)
+                return string_to_date(contentline.value)
             else:
                 raise
 
 
+@deprecated
 def stringToPeriod(s, tzinfo=None):
+    return string_to_period(s, tzinfo)
+
+
+def string_to_period(s: str, tzinfo=None):
+    # period-start = date-time "/" dur-value
     values = s.split("/")
     start = stringToDateTime(values[0], tzinfo)
     valEnd = values[1]
-    if not isDuration(valEnd):
-        return start, stringToDateTime(valEnd, tzinfo)
-    # period-start = date-time "/" dur-value
-    delta = stringToDurations(valEnd)[0]
-    return start, delta
+    if isDuration(valEnd):
+        end = string_to_durations(valEnd)[0]
+    else:
+        end = stringToDateTime(valEnd, tzinfo)
+    return start, end
 
 
 def getTransition(transitionTo, year, tzinfo):
@@ -2079,10 +2104,3 @@ def tzinfo_eq(tzinfo1, tzinfo2, startYear=2000, endYear=2020):
             if t1 != t2 or not dt_test(t1):
                 return False
     return True
-
-
-# ------------------- Testing and running functions ----------------------------
-if __name__ == "__main__":
-    import tests
-
-    tests._test()  # noqa - can't find

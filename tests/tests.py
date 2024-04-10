@@ -2,50 +2,22 @@
 # sourcery skip: no-loop-in-tests, no-conditionals-in-tests
 import datetime
 import json
-import re
 import sys
 import unittest
 
 import dateutil
-import pytz
-from dateutil.rrule import MONTHLY, WEEKLY, rrule, rruleset
 from dateutil.tz import tzutc
 
-from vobject import base, iCalendar, icalendar
+from vobject import base, iCalendar
 from vobject.base import ContentLine, ParseError
 from vobject.base import __behaviorRegistry as BehaviorRegistry
 from vobject.base import parseLine, readComponents, textLineToContentLine
 from vobject.change_tz import change_tz
-from vobject.icalendar import (
-    MultiDateBehavior,
-    PeriodBehavior,
-    RecurringComponent,
-    parseDtstart,
-    stringToPeriod,
-    stringToTextValues,
-    timedeltaToString,
-    utc,
-)
+from vobject.icalendar import MultiDateBehavior, PeriodBehavior
+
+from .common import TEST_FILE_DIR, get_test_file, two_hours
 
 behavior_registry = BehaviorRegistry
-two_hours = datetime.timedelta(hours=2)
-
-
-def get_test_file(path):
-    """
-    Helper function to open and read test files.
-    """
-    filepath = f"test_files/{path}"
-    if sys.version_info[0] < 3:
-        # On python 2, this library operates on bytes.
-        f = open(filepath, "r")
-    else:
-        # On python 3, it operates on unicode. We need to specify an encoding
-        # for systems for which the preferred encoding isn't utf-8 (e.g windows)
-        f = open(filepath, "r", encoding="utf-8")
-    text = f.read()
-    f.close()
-    return text
 
 
 class TestCalendarSerializing(unittest.TestCase):
@@ -65,7 +37,7 @@ class TestCalendarSerializing(unittest.TestCase):
         cal.vevent.add("dtstart").value = datetime.datetime(2006, 5, 9)
         cal.vevent.add("description").value = "Test event"
         cal.vevent.add("created").value = datetime.datetime(
-            2006, 1, 1, 10, tzinfo=dateutil.tz.tzical("test_files/timezones.ics").get("US/Pacific")
+            2006, 1, 1, 10, tzinfo=dateutil.tz.tzical(f"{TEST_FILE_DIR}/timezones.ics").get("US/Pacific")
         )
         cal.vevent.add("uid").value = "Not very random UID"
         cal.vevent.add("dtstamp").value = datetime.datetime(2017, 6, 26, 0, tzinfo=tzutc())
@@ -513,269 +485,6 @@ class TestVcards(unittest.TestCase):
             new_card = base.readOne(card.serialize())
             self.assertEqual(new_card.org.value, card.org.value)
             card = new_card
-
-
-class TestIcalendar(unittest.TestCase):
-    """
-    Tests for icalendar.py
-    """
-
-    max_diff = None
-
-    def test_parseDTStart(self):
-        """
-        Should take a content line and return a datetime object.
-        """
-        self.assertEqual(
-            parseDtstart(textLineToContentLine("DTSTART:20060509T000000")), datetime.datetime(2006, 5, 9, 0, 0)
-        )
-
-    def test_regexes(self):
-        """
-        Test regex patterns
-        """
-        self.assertEqual(re.findall(base.patterns["name"], "12foo-bar:yay"), ["12foo-bar", "yay"])
-        self.assertEqual(re.findall(base.patterns["safe_char"], 'a;b"*,cd'), ["a", "b", "*", "c", "d"])
-        self.assertEqual(re.findall(base.patterns["qsafe_char"], 'a;b"*,cd'), ["a", ";", "b", "*", ",", "c", "d"])
-        self.assertEqual(
-            re.findall(base.patterns["param_value"], '"quoted";not-quoted;start"after-illegal-quote', re.VERBOSE),
-            ['"quoted"', "", "not-quoted", "", "start", "", "after-illegal-quote", ""],
-        )
-        match = base.line_re.match('TEST;ALTREP="http://www.wiz.org":value:;"')
-        self.assertEqual(match.group("value"), 'value:;"')
-        self.assertEqual(match.group("name"), "TEST")
-        self.assertEqual(match.group("params"), ';ALTREP="http://www.wiz.org"')
-
-    def test_stringToTextValues(self):
-        """
-        Test string lists
-        """
-        self.assertEqual(stringToTextValues(""), [""])
-        self.assertEqual(stringToTextValues("abcd,efgh"), ["abcd", "efgh"])
-
-    def test_stringToPeriod(self):
-        """
-        Test datetime strings
-        """
-        self.assertEqual(
-            stringToPeriod("19970101T180000Z/19970102T070000Z"),
-            (datetime.datetime(1997, 1, 1, 18, 0, tzinfo=tzutc()), datetime.datetime(1997, 1, 2, 7, 0, tzinfo=tzutc())),
-        )
-        self.assertEqual(
-            stringToPeriod("19970101T180000Z/PT1H"),
-            (datetime.datetime(1997, 1, 1, 18, 0, tzinfo=tzutc()), datetime.timedelta(0, 3600)),
-        )
-
-    def test_timedeltaToString(self):
-        """
-        Test timedelta strings
-        """
-        self.assertEqual(timedeltaToString(two_hours), "PT2H")
-        self.assertEqual(timedeltaToString(datetime.timedelta(minutes=20)), "PT20M")
-
-    def test_delta_to_offset(self):
-        """Test deltaToOffset() function."""
-
-        # Sydney
-        delta = datetime.timedelta(hours=10)
-        self.assertEqual(icalendar.deltaToOffset(delta), "+1000")
-
-        # New York
-        delta = datetime.timedelta(hours=-5)
-        self.assertEqual(icalendar.deltaToOffset(delta), "-0500")
-
-        # Adelaide (see https://github.com/py-vobject/vobject/pull/12)
-        delta = datetime.timedelta(hours=9, minutes=30)
-        self.assertEqual(icalendar.deltaToOffset(delta), "+0930")
-
-    def test_vtimezone_creation(self):
-        """
-        Test timezones
-        """
-        tzs = dateutil.tz.tzical("test_files/timezones.ics")
-        pacific = icalendar.TimezoneComponent(tzs.get("US/Pacific"))
-        self.assertEqual(str(pacific), "<VTIMEZONE | <TZID{}US/Pacific>>")
-        santiago = icalendar.TimezoneComponent(tzs.get("Santiago"))
-        self.assertEqual(str(santiago), "<VTIMEZONE | <TZID{}Santiago>>")
-        for year in range(2001, 2010):
-            for month in (2, 9):
-                dt = datetime.datetime(year, month, 15, tzinfo=tzs.get("Santiago"))
-                self.assertTrue(dt.replace(tzinfo=tzs.get("Santiago")), dt)
-
-    @staticmethod
-    def test_timezone_serializing():
-        """
-        Serializing with timezones test
-        """
-        tzs = dateutil.tz.tzical("test_files/timezones.ics")
-        pacific = tzs.get("US/Pacific")
-        cal = base.Component("VCALENDAR")
-        cal.setBehavior(icalendar.VCalendar2_0)
-        ev = cal.add("vevent")
-        ev.add("dtstart").value = datetime.datetime(2005, 10, 12, 9, tzinfo=pacific)
-        evruleset = rruleset()
-        evruleset.rrule(rrule(WEEKLY, interval=2, byweekday=[2, 4], until=datetime.datetime(2005, 12, 15, 9)))
-        evruleset.rrule(rrule(MONTHLY, bymonthday=[-1, -5]))
-        evruleset.exdate(datetime.datetime(2005, 10, 14, 9, tzinfo=pacific))
-        ev.rruleset = evruleset
-        ev.add("duration").value = datetime.timedelta(hours=1)
-
-        apple = tzs.get("America/Montreal")
-        ev.dtstart.value = datetime.datetime(2005, 10, 12, 9, tzinfo=apple)
-
-    def test_pytz_timezone_serializing(self):
-        """
-        Serializing with timezones from pytz test
-        """
-
-        # Avoid conflicting cached tzinfo from other tests
-        def unregister_tzid(tzid):
-            """Clear tzid from icalendar TZID registry"""
-            if icalendar.getTzid(tzid, False):
-                icalendar.registerTzid(tzid, None)
-
-        unregister_tzid("US/Eastern")
-        eastern = pytz.timezone("US/Eastern")
-        cal = base.Component("VCALENDAR")
-        cal.setBehavior(icalendar.VCalendar2_0)
-        ev = cal.add("vevent")
-        ev.add("dtstart").value = eastern.localize(datetime.datetime(2008, 10, 12, 9))
-        serialized = cal.serialize()
-
-        expected_vtimezone = get_test_file("tz_us_eastern.ics")
-        self.assertIn(expected_vtimezone.replace("\r\n", "\n"), serialized.replace("\r\n", "\n"))
-
-        # Exhaustively test all zones (just looking for no errors)
-
-        for tzname in pytz.all_timezones:
-            unregister_tzid(tzname)
-            tz = icalendar.TimezoneComponent(tzinfo=pytz.timezone(tzname))
-            tz.serialize()
-
-    @staticmethod
-    def _add_tags(comp, uid, dtstamp, dtstart, dtend):  # todo: rename if required
-        comp.add("uid").value = uid
-        comp.add("dtstamp").value = dtstamp
-        comp.add("dtstart").value = dtstart
-        comp.add("dtend").value = dtend
-
-    def test_freeBusy(self):
-        """
-        Test freebusy components
-        """
-        test_cal = get_test_file("freebusy.ics")
-
-        vfb = base.new_from_behavior("VFREEBUSY")
-        self._add_tags(
-            vfb,
-            uid="test",
-            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
-            dtstart=datetime.datetime(2006, 2, 16, 1, tzinfo=utc),
-            dtend=None,
-        )
-        vfb.dtend.value = vfb.dtstart.value + two_hours
-        vfb.add("freebusy").value = [(vfb.dtstart.value, two_hours / 2)]
-        vfb.add("freebusy").value = [(vfb.dtstart.value, vfb.dtend.value)]
-
-        self.assertEqual(vfb.serialize().replace("\r\n", "\n"), test_cal.replace("\r\n", "\n"))
-
-    def test_availablity(self):
-        """
-        Test availability components
-        """
-        test_cal = get_test_file("availablity.ics")
-
-        vcal = base.new_from_behavior("VAVAILABILITY")
-        self._add_tags(
-            vcal,
-            uid="test",
-            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
-            dtstart=datetime.datetime(2006, 2, 16, 0, tzinfo=utc),
-            dtend=datetime.datetime(2006, 2, 17, 0, tzinfo=utc),
-        )
-        vcal.add("busytype").value = "BUSY"
-
-        av = base.new_from_behavior("AVAILABLE")
-        self._add_tags(
-            av,
-            uid="test1",
-            dtstamp=datetime.datetime(2006, 2, 15, 0, tzinfo=utc),
-            dtstart=datetime.datetime(2006, 2, 16, 9, tzinfo=utc),
-            dtend=datetime.datetime(2006, 2, 16, 12, tzinfo=utc),
-        )
-        av.add("summary").value = "Available in the morning"
-
-        vcal.add(av)
-
-        self.assertEqual(vcal.serialize().replace("\r\n", "\n"), test_cal.replace("\r\n", "\n"))
-
-    def test_recurrence(self):
-        """
-        Ensure date valued UNTILs in rrules are in a reasonable timezone,
-        and include that day (12/28 in this test)
-        """
-        test_file = get_test_file("recurrence.ics")
-        cal = base.readOne(test_file)
-        dates = list(cal.vevent.getrruleset())
-        self.assertEqual(dates[0], datetime.datetime(2006, 1, 26, 23, 0, tzinfo=tzutc()))
-        self.assertEqual(dates[1], datetime.datetime(2006, 2, 23, 23, 0, tzinfo=tzutc()))
-        self.assertEqual(dates[-1], datetime.datetime(2006, 12, 28, 23, 0, tzinfo=tzutc()))
-
-    def test_recurring_component(self):
-        """
-        Test recurring events
-        """
-        vevent = RecurringComponent(name="VEVENT")
-
-        # init
-        self.assertTrue(vevent.isNative)
-
-        # rruleset should be None at this point.
-        # No rules have been passed or created.
-        self.assertEqual(vevent.rruleset, None)
-
-        # Now add start and rule for recurring event
-        vevent.add("dtstart").value = datetime.datetime(2005, 1, 19, 9)
-        vevent.add("rrule").value = "FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=TU,TH"
-        self.assertEqual(
-            list(vevent.rruleset), [datetime.datetime(2005, 1, 20, 9, 0), datetime.datetime(2005, 2, 1, 9, 0)]
-        )
-        self.assertEqual(
-            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
-            [datetime.datetime(2005, 1, 19, 9, 0), datetime.datetime(2005, 1, 20, 9, 0)],
-        )
-
-        # Also note that dateutil will expand all-day events (datetime.date values)
-        # to datetime.datetime value with time 0 and no timezone.
-        vevent.dtstart.value = datetime.date(2005, 3, 18)
-        self.assertEqual(
-            list(vevent.rruleset), [datetime.datetime(2005, 3, 29, 0, 0), datetime.datetime(2005, 3, 31, 0, 0)]
-        )
-        self.assertEqual(
-            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
-            [datetime.datetime(2005, 3, 18, 0, 0), datetime.datetime(2005, 3, 29, 0, 0)],
-        )
-
-    def _recurrence_test(self, file_name):
-        test_file = get_test_file(file_name)
-        cal = base.readOne(test_file)
-        dates = list(cal.vevent.getrruleset())
-        self.assertEqual(dates[0], datetime.datetime(2013, 1, 17, 0, 0))
-        self.assertEqual(dates[1], datetime.datetime(2013, 1, 24, 0, 0))
-        self.assertEqual(dates[-1], datetime.datetime(2013, 3, 28, 0, 0))
-
-    def test_recurrence_without_tz(self):
-        """
-        Test recurring vevent missing any time zone definitions.
-        """
-        self._recurrence_test("recurrence-without-tz.ics")
-
-    def test_recurrence_offset_naive(self):
-        """
-        Ensure recurring vevent missing some time zone definitions is
-        parsing. See isseu #75.
-        """
-        self._recurrence_test("recurrence-offset-naive.ics")
 
 
 class TestChangeTZ(unittest.TestCase):
