@@ -5,40 +5,26 @@ from .helper import deprecated
 
 try:
     # py3.9 and above
-    import winreg as _winreg
+    import winreg
 except ImportError:
     # py3.7 and py3.8
-    import _winreg  # noqa I for compatibility
+    import _winreg as winreg  # noqa I for compatibility
 
-handle = _winreg.ConnectRegistry(None, _winreg.HKEY_LOCAL_MACHINE)
-tzparent = _winreg.OpenKey(handle, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones")
-parentsize = _winreg.QueryInfoKey(tzparent)[0]
+handle = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
+tzparent = winreg.OpenKey(handle, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones")
+parentsize = winreg.QueryInfoKey(tzparent)[0]
 
-localkey = _winreg.OpenKey(handle, "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation")
+localkey = winreg.OpenKey(handle, "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation")
 WEEKS = datetime.timedelta(7)
 
 
 def list_timezones():
     """Return a list of all time zones known to the system."""
-    return [_winreg.EnumKey(tzparent, i) for i in range(parentsize)]
+    return [winreg.EnumKey(tzparent, i) for i in range(parentsize)]
 
 
 class Win32tz(datetime.tzinfo):
-    """tzinfo class based on win32's timezones available in the registry.
-
-    >>> local = Win32tz('Central Standard Time')
-    >>> oct1 = datetime.datetime(month=10, year=2004, day=1, tzinfo=local)
-    >>> dec1 = datetime.datetime(month=12, year=2004, day=1, tzinfo=local)
-    >>> oct1.dst()
-    datetime.timedelta(0, 3600)
-    >>> dec1.dst()
-    datetime.timedelta(0)
-    >>> braz = Win32tz('E. South America Standard Time')
-    >>> braz.dst(oct1)
-    datetime.timedelta(0)
-    >>> braz.dst(dec1)
-    datetime.timedelta(0, 3600)
-    """
+    """tzinfo class based on win32's timezones available in the registry."""
 
     def __init__(self, name):
         self.data = Win32tzData(name)
@@ -95,7 +81,7 @@ class Win32tzData:
     def __init__(self, path):
         """Load path, or if path is empty, load local time."""
         if path:
-            keydict = values_to_dict(_winreg.OpenKey(tzparent, path))
+            keydict = values_to_dict(winreg.OpenKey(tzparent, path))
             self.display = keydict["Display"]
             self.dstname = keydict["Dlt"]
             self.stdname = keydict["Std"]
@@ -119,7 +105,7 @@ class Win32tzData:
             self.stdname = keydict["StandardName"]
             self.dstname = keydict["DaylightName"]
 
-            sourcekey = _winreg.OpenKey(tzparent, self.stdname)
+            sourcekey = winreg.OpenKey(tzparent, self.stdname)
             self.display = values_to_dict(sourcekey)["Display"]
 
             self.stdoffset = -keydict["Bias"] - keydict["StandardBias"]
@@ -151,21 +137,10 @@ def valuesToDict(key):
 
 def values_to_dict(key):
     """Convert a registry key's values to a dictionary."""
-    size = _winreg.QueryInfoKey(key)[1]
-    return {_winreg.EnumValue(key, i)[0]: _winreg.EnumValue(key, i)[1] for i in range(size)}
-
-
-def _test():
-    import doctest
-
-    import win32tz  # noqa
-
-    doctest.testmod(win32tz, verbose=False)
+    size = winreg.QueryInfoKey(key)[1]
+    return {winreg.EnumValue(key, i)[0]: winreg.EnumValue(key, i)[1] for i in range(size)}
 
 
 # Aliases for the class
 win32tz = Win32tz
 win32tz_data = Win32tzData
-
-if __name__ == "__main__":
-    _test()

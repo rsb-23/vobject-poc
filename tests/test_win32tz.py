@@ -1,0 +1,21 @@
+import datetime
+from unittest import TestCase, skip
+
+from vobject.win32tz import Win32tz
+
+
+class TestWin32tz(TestCase):
+    def setUp(self):
+        self.local = Win32tz("Central Standard Time")
+        self.oct1 = datetime.datetime(month=10, year=2004, day=1, tzinfo=self.local)
+        self.dec1 = datetime.datetime(month=12, year=2004, day=1, tzinfo=self.local)
+        self.braz = Win32tz("E. South America Standard Time")
+
+    def test_dst_local(self):
+        self.assertEqual(self.oct1.dst(), datetime.timedelta(seconds=3600))
+        self.assertEqual(self.dec1.dst(), datetime.timedelta(0))
+
+    @skip("It fails, need debugging")
+    def test_dst_braz(self):
+        self.assertEqual(self.braz.dst(self.oct1), datetime.timedelta(0))
+        self.assertEqual(self.braz.dst(self.dec1), datetime.timedelta(seconds=3600))

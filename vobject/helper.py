@@ -3,6 +3,7 @@ import functools
 import logging
 import re
 import warnings
+from typing import Generator
 
 logger = logging.getLogger(__name__)
 if not logging.getLogger().handlers:
@@ -53,8 +54,9 @@ def test_case(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         logger.warning(func.__name__)
+        logger.warning(f"{args=}, {kwargs}")
         result = func(*args, **kwargs)
-        logger.warning(msg=f"{args}, {kwargs} : {result}")
+        logger.warning(f"{result=}")
         return result
 
     return wrapper
@@ -75,3 +77,17 @@ def backslash_escape(s):
 
 def indent_str(prefix: str = " ", *, level: int = 0, tabwidth: int = 3) -> str:
     return prefix * level * tabwidth
+
+
+def split_by_size(text: str, byte_size: int) -> Generator:
+    start = space_count = 0
+    encoded = text.encode()
+    total_size = len(encoded)
+    while start < total_size - byte_size:
+        k = byte_size - space_count + start
+        while (encoded[k] & 0xC0) == 0x80:
+            k -= 1
+        yield encoded[start:k].decode() + "\r\n "
+        space_count = 1
+        start = k
+    yield encoded[start:].decode()

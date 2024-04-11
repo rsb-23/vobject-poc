@@ -18,7 +18,9 @@ from dateutil import rrule, tz
 from dateutil.tz import tzutc
 
 from . import behavior
-from .base import Component, ContentLine, foldOneLine, register_behavior
+from .base import Component, ContentLine
+from .base import fold_one_line as fold_one_line
+from .base import register_behavior
 from .helper import backslash_escape, deprecated, indent_str, logger
 from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
 
@@ -126,13 +128,13 @@ class TimezoneComponent(Component):
 
         def customSerialize(obj):
             if isinstance(obj, Component):
-                foldOneLine(buffer, f"BEGIN:{obj.name}")
+                fold_one_line(buffer, f"BEGIN:{obj.name}")
                 for child in obj.lines():
                     if child.name.lower() in good_lines:
                         child.serialize(buffer, 75, validate=False)
                 for comp in obj.components():
                     customSerialize(comp)
-                foldOneLine(buffer, f"END:{obj.name}")
+                fold_one_line(buffer, f"END:{obj.name}")
 
         customSerialize(self)
         buffer.seek(0)  # tzical wants to read a stream
@@ -493,7 +495,6 @@ class RecurringComponent(Component):
                     addfunc(rule)
 
                 if (name == "rrule" or name == "rdate") and addRDate:
-                    added = False
                     # rlist = rruleset._rrule if name == 'rrule' else rruleset._rdate
                     try:
                         # dateutils does not work with all-day (datetime.date) items so we need to convert to a
@@ -506,16 +507,14 @@ class RecurringComponent(Component):
                         if name == "rrule":
                             if rruleset._rrule[-1][0] != adddtstart:
                                 rruleset.rdate(adddtstart)
-                                added = True
                                 if rruleset._rrule[-1]._count is not None:
                                     rruleset._rrule[-1]._count -= 1
                         elif name == "rdate":
                             if rruleset._rdate[0] != adddtstart:
                                 rruleset.rdate(adddtstart)
-                                added = True
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
-                        added = False  # noqa
+                        pass
 
         return rruleset
 
@@ -997,17 +996,13 @@ class VCalendar2(VCalendarComponentBehavior):
         cls.generateImplicitParameters(obj)
         if validate:
             cls.validate(obj, raiseException=True)
-        if obj.isNative:
-            # transformed = obj.transformFromNative() # not used
-            undoTransform = True
-        else:
-            # transformed = obj # not used
-            undoTransform = False
+
+        undoTransform = bool(obj.isNative)
 
         outbuf = buf or io.StringIO()
         groupString = "" if obj.group is None else f"{obj.group}."
         if obj.useBegin:
-            foldOneLine(outbuf, f"{groupString}BEGIN:{obj.name}", lineLength)
+            fold_one_line(outbuf, f"{groupString}BEGIN:{obj.name}", lineLength)
 
         try:
             first_props = [
@@ -1034,7 +1029,7 @@ class VCalendar2(VCalendarComponentBehavior):
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, f"{groupString}END:{obj.name}", lineLength)
+            fold_one_line(outbuf, f"{groupString}END:{obj.name}", lineLength)
         out = buf or outbuf.getvalue()
         if undoTransform:
             obj.transformToNative()
@@ -1067,16 +1062,13 @@ class VTimezone(VCalendarComponentBehavior):
     def validate(cls, obj, raiseException=False, *args):
         if not hasattr(obj, "tzid") or obj.tzid.value is None:
             if raiseException:
-                m = "VTIMEZONE components must contain a valid TZID"
-                raise ValidateError(m)
+                raise ValidateError("VTIMEZONE components must contain a valid TZID")
             return False
         if "standard" in obj.contents or "daylight" in obj.contents:
             return super(VTimezone, cls).validate(obj, raiseException, *args)
 
         if raiseException:
-            m = "VTIMEZONE components must contain a STANDARD or a DAYLIGHT\
-                 component"
-            raise ValidateError(m)
+            raise ValidateError("VTIMEZONE components must contain a STANDARD or a DAYLIGHT component")
         return False
 
     @staticmethod
@@ -1127,9 +1119,10 @@ class VEvent(RecurringBehavior):
     name = "VEVENT"
     sortFirst = ("uid", "recurrence-id", "dtstart", "duration", "dtend")
 
-    description = 'A grouping of component properties, and possibly including \
-                   "VALARM" calendar components, that represents a scheduled \
-                   amount of time on a calendar.'
+    description = (
+        'A grouping of component properties, and possibly including "VALARM" calendar components, '
+        "that represents a scheduled amount of time on a calendar."
+    )
     knownChildren = {
         "DTSTART": (0, 1, None),  # min, max, behaviorRegistry id
         "CLASS": (0, 1, None),
@@ -1170,9 +1163,7 @@ class VEvent(RecurringBehavior):
         if "dtend" not in obj.contents or "duration" not in obj.contents:
             return super(VEvent, cls).validate(obj, raiseException, *args)
         if raiseException:
-            m = "VEVENT components cannot contain both DTEND and DURATION\
-                 components"
-            raise ValidateError(m)
+            raise ValidateError("VEVENT components cannot contain both DTEND and DURATION components")
         return False
 
 
@@ -1185,9 +1176,10 @@ class VTodo(RecurringBehavior):
     """
 
     name = "VTODO"
-    description = 'A grouping of component properties and possibly "VALARM" \
-                   calendar components that represent an action-item or \
-                   assignment.'
+    description = (
+        'A grouping of component properties and possibly "VALARM" calendar components that represent an '
+        "action-item or assignment."
+    )
     knownChildren = {
         "DTSTART": (0, 1, None),  # min, max, behaviorRegistry id
         "CLASS": (0, 1, None),
@@ -1229,9 +1221,7 @@ class VTodo(RecurringBehavior):
         if "due" not in obj.contents or "duration" not in obj.contents:
             return super(VTodo, cls).validate(obj, raiseException, *args)
         if raiseException:
-            m = "VTODO components cannot contain both DUE and DURATION\
-                     components"
-            raise ValidateError(m)
+            raise ValidateError("VTODO components cannot contain both DUE and DURATION components")
         return False
 
 
@@ -1281,9 +1271,10 @@ class VFreeBusy(VCalendarComponentBehavior):
     """
 
     name = "VFREEBUSY"
-    description = "A grouping of component properties that describe either a \
-                   request for free/busy time, describe a response to a request \
-                   for free/busy time or describe a published set of busy time."
+    description = (
+        "A grouping of component properties that describe either a request for free/busy time, describe a "
+        "response to a request for free/busy time or describe a published set of busy time."
+    )
     sortFirst = ("uid", "dtstart", "duration", "dtend")
     knownChildren = {
         "DTSTART": (0, 1, None),  # min, max, behaviorRegistry id
@@ -1310,8 +1301,7 @@ class VAlarm(VCalendarComponentBehavior):
     """
 
     name = "VALARM"
-    description = "Alarms describe when and how to provide alerts about events \
-                   and to-dos."
+    description = "Alarms describe when and how to provide alerts about events and to-dos."
     knownChildren = {
         "ACTION": (1, 1, None),  # min, max, behaviorRegistry id
         "TRIGGER": (1, 1, None),
@@ -1340,9 +1330,7 @@ class VAlarm(VCalendarComponentBehavior):
         # TODO
         if obj.contents.has_key('dtend') and obj.contents.has_key('duration'):
             if raiseException:
-                m = "VEVENT components cannot contain both DTEND and DURATION\
-                     components"
-                raise ValidateError(m)
+                raise ValidateError("VEVENT components cannot contain both DTEND and DURATION components")
             return False
         else:
             return super(VEvent, cls).validate(obj, raiseException, *args)
@@ -1387,8 +1375,7 @@ class VAvailability(VCalendarComponentBehavior):
         if "dtend" not in obj.contents or "duration" not in obj.contents:
             return super(VAvailability, cls).validate(obj, raiseException, *args)
         if raiseException:
-            m = "VAVAILABILITY components cannot contain both DTEND and DURATION components"
-            raise ValidateError(m)
+            raise ValidateError("VAVAILABILITY components cannot contain both DTEND and DURATION components")
         return False
 
 
@@ -1427,15 +1414,11 @@ class Available(RecurringBehavior):
         has_duration = "duration" in obj.contents
         if has_dtend and has_duration:
             if raiseException:
-                m = "AVAILABLE components cannot contain both DTEND and DURATION\
-                     properties"
-                raise ValidateError(m)
+                raise ValidateError("AVAILABLE components cannot contain both DTEND and DURATION properties")
             return False
         elif not (has_dtend or has_duration):
             if raiseException:
-                m = "AVAILABLE components must contain one of DTEND or DURATION\
-                     properties"
-                raise ValidateError(m)
+                raise ValidateError("AVAILABLE components must contain one of DTEND or DURATION properties")
             return False
         else:
             return super(Available, cls).validate(obj, raiseException, *args)

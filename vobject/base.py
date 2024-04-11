@@ -9,13 +9,11 @@ import io
 import re
 import sys
 from datetime import date
+from functools import lru_cache
 
-from .helper import CRLF, SPACEORTAB, backslashEscape, deprecated, indent_str, logger
+from .helper import CRLF, SPACEORTAB, deprecated, indent_str, logger, split_by_size
 from .vobject_error import NativeError, ParseError, VObjectError
 
-backslashEscape = backslashEscape  # todo: to be removed later
-# Python 3 no longer has a basestring type, so....
-basestring = (str, bytes)
 logger.name = __name__
 
 
@@ -208,6 +206,7 @@ class VBase:
             return defaultSerialize(self, buf, lineLength)
 
 
+@lru_cache(32)
 def toVName(name, stripNum=0, upper=False):
     """
     Turn a Python name into an iCalendar style name,
@@ -217,6 +216,21 @@ def toVName(name, stripNum=0, upper=False):
         name = name.upper()
     if stripNum != 0:
         name = name[:-stripNum]
+    return name.replace("_", "-")
+
+
+def to_vname(name: str, to_upper=False):
+    """
+    Turn a Python name into an iCalendar style name,
+    optionally uppercase and with characters stripped off.
+    """
+    bad_suffix = "_list", "_param", "_paramlist"
+    for suffix in bad_suffix:
+        if name.endswith(suffix):
+            name = name.rstrip(suffix)
+            break
+    if to_upper:
+        name = name.upper()
     return name.replace("_", "-")
 
 
@@ -309,11 +323,7 @@ class ContentLine(VBase):
         self.lineNumber = copyit.lineNumber
 
     def __eq__(self, other):
-        try:
-            return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
-        except Exception as e:  # noqa #todo: exception not clear
-            logger.critical(e)
-            return False
+        return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
 
     def __getattr__(self, name):
         """
@@ -353,7 +363,7 @@ class ContentLine(VBase):
             else:
                 object.__setattr__(self, name, value)
 
-    def __delattr__(self, name):
+    def __delattr__(self, name: str):
         try:
             if name.endswith("_param"):
                 del self.params[toVName(name, 6, True)]
@@ -878,6 +888,7 @@ def dquoteEscape(param):
     return param
 
 
+@deprecated
 def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
@@ -909,7 +920,6 @@ def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
             size = len(to_basestring(s))  # calculate it's size in bytes
             if counter + size > lineLength:
                 outbuf_write("\r\n ")
-
                 counter = 1  # one for space
 
             outbuf_write(s)
@@ -921,6 +931,17 @@ def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
     outbuf_write("\r\n")
 
 
+def fold_one_line(outbuf: io.StringIO, input_: str, line_length=75):
+    """
+    Folding line procedure that ensures multi-byte utf-8 sequences are not
+    broken across lines
+    """
+    chunks = split_by_size(input_, byte_size=line_length)
+    for chunk in chunks:
+        outbuf.write(chunk)
+    outbuf.write("\r\n")
+
+
 def defaultSerialize(obj, buf, lineLength):
     """
     Encode and fold obj and its children, write to buf or return a string.
@@ -930,12 +951,12 @@ def defaultSerialize(obj, buf, lineLength):
     if isinstance(obj, Component):
         groupString = f"{obj.group}." if obj.group else ""
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
+            fold_one_line(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
         for child in obj.getSortedChildren():
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
+            fold_one_line(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
 
     elif isinstance(obj, ContentLine):
         startedEncoded = obj.encoded  # sourcery skip: extract-method
@@ -960,7 +981,7 @@ def defaultSerialize(obj, buf, lineLength):
             s.write(":{0}".format(obj.value.encode("utf-8")))
         if obj.behavior and not startedEncoded:
             obj.behavior.decode(obj)
-        foldOneLine(outbuf, s.getvalue(), lineLength)
+        fold_one_line(outbuf, s.getvalue(), lineLength)
 
     return buf or outbuf.getvalue()
 
@@ -999,7 +1020,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
     """
     Generate one Component at a time from a stream.
     """
-    if isinstance(streamOrString, basestring):
+    if isinstance(streamOrString, str):
         stream = io.StringIO(streamOrString)
     else:
         stream = streamOrString

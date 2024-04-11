@@ -5,7 +5,7 @@ from __future__ import annotations
 import codecs
 
 from . import behavior
-from .base import ContentLine, basestring, register_behavior
+from .base import ContentLine, register_behavior
 from .helper import backslash_escape, logger
 from .icalendar import stringToTextValues
 
@@ -254,7 +254,7 @@ def splitFields(string):
 
 
 def toList(string_or_list) -> list[str]:
-    return [string_or_list] if isinstance(string_or_list, basestring) else string_or_list
+    return [string_or_list] if isinstance(string_or_list, str) else string_or_list
 
 
 def serializeFields(obj, order=None):

@@ -55,3 +55,17 @@ services:
       args:
         PYTHON_VERSION: "3.10"
     image: vobject:py310
+  py311:
+    build:
+      context: .
+      dockerfile: extras/Dockerfile
+      args:
+        PYTHON_VERSION: 3.11
+    image: vobject:py311
+  py312:
+    build:
+      context: .
+      dockerfile: extras/Dockerfile
+      args:
+        PYTHON_VERSION: 3.12
+    image: vobject:py312
