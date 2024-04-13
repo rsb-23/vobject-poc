@@ -2,7 +2,8 @@ import datetime as dt
 import sys
 from unittest import TestCase, skip, skipUnless
 
-from vobject.win32tz import Win32tz
+if sys.platform == "win32":
+    from vobject.win32tz import Win32tz
 
 
 @skipUnless(sys.platform == "win32", "This is windows specific module")
