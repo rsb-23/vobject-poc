@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# sourcery skip: no-loop-in-tests, no-conditionals-in-tests
-import datetime
+import datetime as dt
 import json
 import sys
 import unittest
@@ -34,13 +33,13 @@ class TestCalendarSerializing(unittest.TestCase):
         test_cal = get_test_file("simple_2_0_test.ics")
         cal = base.new_from_behavior("vcalendar", "2.0")
         cal.add("vevent")
-        cal.vevent.add("dtstart").value = datetime.datetime(2006, 5, 9)
+        cal.vevent.add("dtstart").value = dt.datetime(2006, 5, 9)
         cal.vevent.add("description").value = "Test event"
-        cal.vevent.add("created").value = datetime.datetime(
+        cal.vevent.add("created").value = dt.datetime(
             2006, 1, 1, 10, tzinfo=dateutil.tz.tzical(f"{TEST_FILE_DIR}/timezones.ics").get("US/Pacific")
         )
         cal.vevent.add("uid").value = "Not very random UID"
-        cal.vevent.add("dtstamp").value = datetime.datetime(2017, 6, 26, 0, tzinfo=tzutc())
+        cal.vevent.add("dtstamp").value = dt.datetime(2017, 6, 26, 0, tzinfo=tzutc())
 
         cal.vevent.add("attendee").value = "mailto:froelich@example.com"
         cal.vevent.attendee.params["CN"] = ["Fröhlich"]
@@ -103,7 +102,7 @@ class TestCalendarSerializing(unittest.TestCase):
         cal = iCalendar()
         cal.add("method").value = "REQUEST"
         cal.add("vevent")
-        cal.vevent.add("created").value = datetime.datetime.now()
+        cal.vevent.add("created").value = dt.datetime.now()
         cal.vevent.add("summary").value = "Классное событие"
         cal.vevent.add("description").value = (
             "Классное событие Классное событие Классное событие Классное событие "
@@ -271,14 +270,12 @@ class TestBehaviors(unittest.TestCase):
         """
         line = ContentLine("test", [], "", isNative=True)
         line.behavior = PeriodBehavior
-        line.value = [(datetime.datetime(2006, 2, 16, 10), two_hours)]
+        line.value = [(dt.datetime(2006, 2, 16, 10), two_hours)]
 
         self.assertEqual(line.transformFromNative().value, "20060216T100000/PT2H")
-        self.assertEqual(
-            line.transformToNative().value, [(datetime.datetime(2006, 2, 16, 10, 0), datetime.timedelta(0, 7200))]
-        )
+        self.assertEqual(line.transformToNative().value, [(dt.datetime(2006, 2, 16, 10, 0), dt.timedelta(0, 7200))])
 
-        line.value.append((datetime.datetime(2006, 5, 16, 10), two_hours))
+        line.value.append((dt.datetime(2006, 5, 16, 10), two_hours))
 
         self.assertEqual(line.serialize().strip(), "TEST:20060216T100000/PT2H,20060516T100000/PT2H")
 
@@ -295,10 +292,10 @@ class TestVTodo(unittest.TestCase):
         vtodo = get_test_file("vtodo.ics")
         obj = base.readOne(vtodo)
         obj.vtodo.add("completed")
-        obj.vtodo.completed.value = datetime.datetime(2015, 5, 5, 13, 30)
+        obj.vtodo.completed.value = dt.datetime(2015, 5, 5, 13, 30)
         self.assertEqual(obj.vtodo.completed.serialize()[:23], "COMPLETED:20150505T1330")
         obj = base.readOne(obj.serialize())
-        self.assertEqual(obj.vtodo.completed.value, datetime.datetime(2015, 5, 5, 13, 30))
+        self.assertEqual(obj.vtodo.completed.value, dt.datetime(2015, 5, 5, 13, 30))
 
 
 class TestVobject(unittest.TestCase):
@@ -387,10 +384,10 @@ class TestGeneralFileParsing(unittest.TestCase):
         self.assertEqual(str(c.vevent.valarm.trigger), "<TRIGGER{}-1 day, 0:00:00>")
 
         self.assertEqual(str(c.vevent.dtstart.value), "2002-10-28 14:00:00-08:00")
-        self.assertTrue(isinstance(c.vevent.dtstart.value, datetime.datetime))
+        self.assertTrue(isinstance(c.vevent.dtstart.value, dt.datetime))
         self.assertEqual(str(c.vevent.dtend.value), "2002-10-28 15:00:00-08:00")
-        self.assertTrue(isinstance(c.vevent.dtend.value, datetime.datetime))
-        self.assertEqual(c.vevent.dtstamp.value, datetime.datetime(2002, 10, 28, 1, 17, 6, tzinfo=tzutc()))
+        self.assertTrue(isinstance(c.vevent.dtend.value, dt.datetime))
+        self.assertEqual(c.vevent.dtstamp.value, dt.datetime(2002, 10, 28, 1, 17, 6, tzinfo=tzutc()))
 
         vevent = c.vevent.transformFromNative()
         self.assertEqual(str(vevent.rrule), "<RRULE{}FREQ=Weekly;COUNT=10>")
@@ -520,12 +517,12 @@ class TestChangeTZ(unittest.TestCase):
 
         dates = [
             (
-                datetime.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=old_tz),
-                datetime.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=old_tz),
+                dt.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=old_tz),
+                dt.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=old_tz),
             ),
             (
-                datetime.datetime(2010, 12, 31, 23, 59, 59, 0, tzinfo=old_tz),
-                datetime.datetime(2011, 1, 2, 3, 0, 0, 0, tzinfo=old_tz),
+                dt.datetime(2010, 12, 31, 23, 59, 59, 0, tzinfo=old_tz),
+                dt.datetime(2011, 1, 2, 3, 0, 0, 0, tzinfo=old_tz),
             ),
         ]
 
@@ -537,12 +534,12 @@ class TestChangeTZ(unittest.TestCase):
         # Test - that the tzs were converted correctly
         expected_new_dates = [
             (
-                datetime.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
-                datetime.datetime(1999, 12, 31, 18, 0, 0, 0, tzinfo=new_tz),
+                dt.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
+                dt.datetime(1999, 12, 31, 18, 0, 0, 0, tzinfo=new_tz),
             ),
             (
-                datetime.datetime(2010, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
-                datetime.datetime(2011, 1, 1, 21, 0, 0, 0, tzinfo=new_tz),
+                dt.datetime(2010, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
+                dt.datetime(2011, 1, 1, 21, 0, 0, 0, tzinfo=new_tz),
             ),
         ]
 
@@ -563,8 +560,8 @@ class TestChangeTZ(unittest.TestCase):
 
         dates = [
             (
-                datetime.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=utc_tz),
-                datetime.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=non_utc_tz),
+                dt.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=utc_tz),
+                dt.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=non_utc_tz),
             )
         ]
 
@@ -574,7 +571,7 @@ class TestChangeTZ(unittest.TestCase):
         change_tz(cal, new_tz, dateutil.tz.gettz("UTC"), utc_only=True)
 
         # Test - that only the utc item has changed
-        expected_new_dates = [(datetime.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz), dates[0][1])]
+        expected_new_dates = [(dt.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz), dates[0][1])]
 
         for vevent, expected_datepair in zip(cal.vevent_list, expected_new_dates):
             self.assertEqual(vevent.dtstart.value, expected_datepair[0])
@@ -591,10 +588,7 @@ class TestChangeTZ(unittest.TestCase):
         new_tz = dateutil.tz.gettz("America/Chicago")  # -5:00
 
         dates = [
-            (
-                datetime.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=None),
-                datetime.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=None),
-            )
+            (dt.datetime(1999, 12, 31, 23, 59, 59, 0, tzinfo=None), dt.datetime(2000, 1, 1, 0, 0, 0, 0, tzinfo=None))
         ]
 
         cal = self.StubCal(dates)
@@ -605,8 +599,8 @@ class TestChangeTZ(unittest.TestCase):
         # Test - that the tzs were converted correctly
         expected_new_dates = [
             (
-                datetime.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
-                datetime.datetime(1999, 12, 31, 18, 0, 0, 0, tzinfo=new_tz),
+                dt.datetime(1999, 12, 31, 17, 59, 59, 0, tzinfo=new_tz),
+                dt.datetime(1999, 12, 31, 18, 0, 0, 0, tzinfo=new_tz),
             )
         ]
 

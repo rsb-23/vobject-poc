@@ -1,5 +1,7 @@
 from optparse import OptionParser
 
+from vobject.helper import deprecated
+
 from .base import Component, new_from_behavior, readOne
 
 """
@@ -161,15 +163,21 @@ def diff(left, right):
     return vevents + vtodos
 
 
+@deprecated
 def prettyDiff(leftObj, rightObj):
-    for left, right in diff(leftObj, rightObj):
-        print("<<<<<<<<<<<<<<<")
+    return pretty_diff(leftObj, rightObj)
+
+
+def pretty_diff(left_obj, right_obj):
+    seperator_size = 15
+    for left, right in diff(left_obj, right_obj):
+        print("<" * seperator_size)
         if left is not None:
             left.pretty_print()
-        print("===============")
+        print("=" * seperator_size)
         if right is not None:
             right.pretty_print()
-        print(">>>>>>>>>>>>>>>")
+        print(">" * seperator_size)
 
 
 def main():

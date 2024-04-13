@@ -28,11 +28,10 @@ and an equivalent event in hCalendar format with various elements optimized appr
 </span>
 """
 
-import io
 from datetime import date, datetime, timedelta
 
 from .base import register_behavior
-from .helper import CRLF, indent_str
+from .helper import Character, get_buffer, indent_str
 from .icalendar import VCalendar2_0
 
 
@@ -45,33 +44,29 @@ class HCalendar(VCalendar2_0):
         Serialize iCalendar to HTML using the hCalendar microformat (http://microformats.org/wiki/hcalendar)
         """
 
-        outbuf = buf or io.StringIO()
+        outbuf = buf or get_buffer()
         level, tabwidth = 0, 3  # holds current indentation level
 
-        def indent():
-            return indent_str(level=level, tabwidth=tabwidth)
-
-        def out(s):
-            outbuf.write(indent())
-            outbuf.write(s)
+        def buffer_write(s):
+            outbuf.write(f"{indent_str(level=level, tabwidth=tabwidth)}{s}{Character.CRLF}")
 
         # not serializing optional vcalendar wrapper
 
         vevents = obj.vevent_list
 
         for event in vevents:
-            out(f'<span class="vevent">{CRLF}')
+            buffer_write('<span class="vevent">')
             level += 1
 
             # URL
             url = event.getChildValue("url")
             if url:
-                out(f'<a class="url" href="{url}">{CRLF}')
+                buffer_write(f'<a class="url" href="{url}">')
                 level += 1
             # SUMMARY
             summary = event.getChildValue("summary")
             if summary:
-                out(f'<span class="summary">{summary}</span>:{CRLF}')
+                buffer_write(f'<span class="summary">{summary}</span>:')
 
             # DTSTART
             dtstart = event.getChildValue("dtstart")
@@ -87,10 +82,8 @@ class HCalendar(VCalendar2_0):
                 # TODO: Handle non-datetime formats?
                 # TODO: Spec says we should handle when dtstart isn't included
 
-                out(
-                    '<abbr class="dtstart", title="{0!s}">{1!s}</abbr>\r\n'.format(
-                        dtstart.strftime(machine), dtstart.strftime(timeformat)
-                    )
+                buffer_write(
+                    f'<abbr class="dtstart", title="{dtstart.strftime(machine)}">{dtstart.strftime(timeformat)}</abbr>'
                 )
 
                 # DTEND
@@ -107,27 +100,25 @@ class HCalendar(VCalendar2_0):
                     if type(dtend) is date:
                         human = dtend - timedelta(days=1)
 
-                    out(
-                        '- <abbr class="dtend", title="{0!s}">{1!s}</abbr>\r\n'.format(
-                            dtend.strftime(machine), human.strftime(timeformat)
-                        )
+                    buffer_write(
+                        f'- <abbr class="dtend", title="{dtend.strftime(machine)}">{human.strftime(timeformat)}</abbr>'
                     )
 
             # LOCATION
             location = event.getChildValue("location")
             if location:
-                out(f'at <span class="location">{location}</span>{CRLF}')
+                buffer_write(f'at <span class="location">{location}</span>')
 
             description = event.getChildValue("description")
             if description:
-                out(f'<div class="description">{description}</div>{CRLF}')
+                buffer_write(f'<div class="description">{description}</div>')
 
             if url:
                 level -= 1
-                out(f"</a>{CRLF}")
+                buffer_write("</a>")
 
             level -= 1
-            out(f"</span>{CRLF}")  # close vevent
+            buffer_write("</span>")  # close vevent
 
         return buf or outbuf.getvalue()
 

@@ -278,7 +278,6 @@ class TestIcalendar(TestCase):
 
     def test_recurrence_offset_naive(self):
         """
-        Ensure recurring vevent missing some time zone definitions is
-        parsing. See isseu #75.
+        Ensure recurring vevent missing some time zone definitions is parsing. See issue #75.
         """
         self._recurrence_test("recurrence-offset-naive.ics")

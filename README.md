@@ -63,7 +63,7 @@ VObject requires Python 3.7 or higher, along with the [dateutil](https://pypi.py
 To run all tests, use:
 
 ```
-python tests.py
+python -m unittest discover -f
 ```
 
 
@@ -223,7 +223,6 @@ Similarly, readComponents is a generator yielding one top level component at a t
 datetime.datetime(2006, 2, 16, 0, 0, tzinfo=tzutc())
 ```
 
-More examples can be found in source code doctests.
 
 
 ## vCards

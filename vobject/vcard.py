@@ -11,10 +11,13 @@ from .icalendar import stringToTextValues
 
 logger.name = __name__
 
+wacky_apple_photo_serialize = True
+REALLY_LARGE = 1e50
+NAME_ORDER = ("family", "given", "additional", "prefix", "suffix")
+ADDRESS_ORDER = ("box", "extended", "street", "city", "region", "code", "country")
+
 
 # ------------------------ vCard structs ---------------------------------------
-
-
 class Name:
     def __init__(self, family="", given="", additional="", prefix="", suffix=""):
         """
@@ -41,16 +44,13 @@ class Name:
         return f"<Name: {str(self)}>"
 
     def __eq__(self, other):
-        try:
-            return (
-                self.family == other.family
-                and self.given == other.given
-                and self.additional == other.additional
-                and self.prefix == other.prefix
-                and self.suffix == other.suffix
-            )
-        except AttributeError:
-            return False
+        return (
+            self.family == other.family
+            and self.given == other.given
+            and self.additional == other.additional
+            and self.prefix == other.prefix
+            and self.suffix == other.suffix
+        )
 
 
 class Address:
@@ -214,9 +214,6 @@ class Label(VCardTextBehavior):
 
 register_behavior(Label)
 
-wacky_apple_photo_serialize = True
-REALLY_LARGE = 1e50
-
 
 class Photo(VCardTextBehavior):
     name = "Photo"
@@ -272,10 +269,6 @@ def serializeFields(obj, order=None):
             escapedValueList = [backslash_escape(val) for val in toList(getattr(obj, field))]
             fields.append(",".join(escapedValueList))
     return ";".join(fields)
-
-
-NAME_ORDER = ("family", "given", "additional", "prefix", "suffix")
-ADDRESS_ORDER = ("box", "extended", "street", "city", "region", "code", "country")
 
 
 class NameBehavior(VCardBehavior):

@@ -1,4 +1,3 @@
-# sourcery skip: no-loop-in-tests
 import datetime as dt
 from io import StringIO
 from unittest import TestCase

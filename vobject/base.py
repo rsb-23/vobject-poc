@@ -2,16 +2,11 @@
 
 from __future__ import annotations
 
-import codecs
-import contextlib
-import copy
-import io
-import re
-import sys
-from datetime import date
-from functools import lru_cache
+import datetime as dt
 
-from .helper import CRLF, SPACEORTAB, deprecated, indent_str, logger, split_by_size
+from .helper import Character as Char
+from .helper import byte_decoder, deprecated, get_buffer, indent_str, logger, split_by_size
+from .helper.imports_ import TextIO, contextlib, copy, lru_cache, re, sys
 from .vobject_error import NativeError, ParseError, VObjectError
 
 logger.name = __name__
@@ -275,7 +270,7 @@ class ContentLine(VBase):
         self.singletonparams = []
         self.isNative = isNative
         self.lineNumber = lineNumber
-        self.value: str | date = value
+        self.value: str | dt.date = value
 
         def updateTable(x):
             if len(x) == 1:
@@ -302,8 +297,7 @@ class ContentLine(VBase):
                 _encoding = self.params["CHARSET"][0]
             else:
                 _encoding = "utf-8"
-            # TODO: check why decoding twice?
-            self.value = codecs.decode(self.value.encode("utf-8"), "quoted-printable").decode(_encoding)  # noqa I
+            self.value = byte_decoder(self.value, "quoted-printable").decode(_encoding)
 
     @classmethod
     def duplicate(cls, copyit):
@@ -784,17 +778,13 @@ patterns["wraporend"] = r"({wrap!s} | {lineend!s} )".format(**patterns)
 wrap_re = re.compile(patterns["wraporend"], re.VERBOSE)
 logical_lines_re = re.compile(patterns["logicallines"], re.VERBOSE)
 
-testLines = """
-Line 0 text
- , Line 0 continued.
-Line 1;encoding=quoted-printable:this is an evil=
- evil=
- format.
-Line 2 is a new line, it does not start with whitespace.
-"""
+
+@deprecated
+def getLogicalLines(fp, allowQP=True):
+    return get_logical_lines(fp, allow_qp=allowQP)
 
 
-def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
+def get_logical_lines(fp, allow_qp=True):  # sourcery skip: low-code-quality
     """
     Iterate through a stream, yielding one logical line at a time.
 
@@ -804,20 +794,9 @@ def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
     of the line.
 
     Quoted-printable data will be decoded in the Behavior decoding phase.
-
-    # We're leaving this test in for awhile, because the unittest was ugly and dumb.
-    >>> from io import StringIO
-    >>> f=StringIO(testLines)
-    >>> for _n, l in enumerate(getLogicalLines(f)):
-    ...     print("Line %s: %s" % (_n, l[0]))
-    ...
-    Line 0: Line 0 text, Line 0 continued.
-    Line 1: Line 1;encoding=quoted-printable:this is an evil=
-     evil=
-     format.
-    Line 2: Line 2 is a new line, it does not start with whitespace.
     """
-    if not allowQP:
+    # todo: simplify this logic
+    if not allow_qp:
         val = fp.read(-1)
 
         lineNumber = 1
@@ -829,37 +808,36 @@ def getLogicalLines(fp, allowQP=True):  # sourcery skip: low-code-quality
 
     else:
         quotedPrintable = False
-        newbuffer = io.StringIO
-        logicalLine = newbuffer()
+        logicalLine = get_buffer()
         lineNumber = 0
         lineStartNumber = 0
         while True:
             line = fp.readline()
             if line == "":
                 break
-            line = line.rstrip(CRLF)
+            line = line.rstrip(Char.CRLF)
             lineNumber += 1
             if line.rstrip() == "":
                 if logicalLine.tell() > 0:
                     yield logicalLine.getvalue(), lineStartNumber
                 lineStartNumber = lineNumber
-                logicalLine = newbuffer()
+                logicalLine = get_buffer()
                 quotedPrintable = False
                 continue
 
-            if quotedPrintable and allowQP:
+            if quotedPrintable and allow_qp:
                 logicalLine.write("\n")
                 logicalLine.write(line)
                 quotedPrintable = False
-            elif line[0] in SPACEORTAB:
+            elif line[0] in Char.SPACEORTAB:
                 logicalLine.write(line[1:])
             elif logicalLine.tell() > 0:
                 yield logicalLine.getvalue(), lineStartNumber
                 lineStartNumber = lineNumber
-                logicalLine = newbuffer()
+                logicalLine = get_buffer()
                 logicalLine.write(line)
             else:
-                logicalLine = newbuffer()
+                logicalLine = get_buffer()
                 logicalLine.write(line)
 
             # vCard 2.1 allows parameters to be encoded without a parameter name
@@ -931,7 +909,7 @@ def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
     outbuf_write("\r\n")
 
 
-def fold_one_line(outbuf: io.StringIO, input_: str, line_length=75):
+def fold_one_line(outbuf: TextIO, input_: str, line_length=75):
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
     broken across lines
@@ -946,7 +924,7 @@ def defaultSerialize(obj, buf, lineLength):
     """
     Encode and fold obj and its children, write to buf or return a string.
     """
-    outbuf = buf or io.StringIO()
+    outbuf = buf or get_buffer()
 
     if isinstance(obj, Component):
         groupString = f"{obj.group}." if obj.group else ""
@@ -963,7 +941,7 @@ def defaultSerialize(obj, buf, lineLength):
         if obj.behavior and not startedEncoded:
             obj.behavior.encode(obj)
 
-        s = io.StringIO()
+        s = get_buffer()
 
         if obj.group is not None:
             s.write(f"{obj.group}.")
@@ -1021,7 +999,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
     Generate one Component at a time from a stream.
     """
     if isinstance(streamOrString, str):
-        stream = io.StringIO(streamOrString)
+        stream = get_buffer(streamOrString)
     else:
         stream = streamOrString
 
@@ -1029,7 +1007,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
         stack = Stack()
         versionLine = None
         n = 0
-        for line, n in getLogicalLines(stream, allowQP):
+        for line, n in get_logical_lines(stream, allowQP):
             if ignoreUnreadable:
                 try:
                     vline = textLineToContentLine(line, n)
