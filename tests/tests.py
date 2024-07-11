@@ -268,7 +268,7 @@ class TestBehaviors(unittest.TestCase):
         """
         Test PeriodBehavior
         """
-        line = ContentLine("test", [], "", isNative=True)
+        line = ContentLine("test", [], "", is_native=True)
         line.behavior = PeriodBehavior
         line.value = [(dt.datetime(2006, 2, 16, 10), two_hours)]
 
@@ -406,7 +406,7 @@ class TestGeneralFileParsing(unittest.TestCase):
         cal = get_test_file("badline.ics")
         self.assertRaises(ParseError, base.readOne, cal)
 
-        newcal = base.readOne(cal, ignoreUnreadable=True)
+        newcal = base.readOne(cal, ignore_unreadable=True)
         self.assertEqual(str(newcal.vevent.x_bad_underscore), "<X-BAD-UNDERSCORE{}TRUE>")
 
     def test_parseParams(self):
@@ -613,14 +613,14 @@ class TestCompatibility(unittest.TestCase):
 
     def test_radicale_0816(self):
         ics_str = get_test_file("radicale-0816.ics")
-        vobjs = base.readComponents(ics_str, allowQP=True)
+        vobjs = base.readComponents(ics_str, allow_qp=True)
         for vo in vobjs:
             self.assertIsNotNone(vo)
         return
 
     def test_radicale_0827(self):
         ics_str = get_test_file("radicale-0827.ics")
-        vobjs = base.readComponents(ics_str, allowQP=True)
+        vobjs = base.readComponents(ics_str, allow_qp=True)
         for vo in vobjs:
             self.assertIsNotNone(vo)
         return

@@ -62,10 +62,10 @@ class Behavior:
         raise base.VObjectError(err)
 
     @classmethod
-    def validate(cls, obj, raiseException=False, *args):
-        complainUnrecognized = False
+    def validate(cls, obj, raise_exception=False, *args):
+        complain_unrecognized = False
         # TODO: add deprecated params warning
-        return cls._validate(obj, raise_exception=raiseException, complain_unrecognized=complainUnrecognized)
+        return cls._validate(obj, raise_exception=raise_exception, complain_unrecognized=complain_unrecognized)
 
     @classmethod
     def _validate(cls, obj, raise_exception=False, complain_unrecognized=False):
@@ -111,10 +111,10 @@ class Behavior:
             raise base.VObjectError(err)
 
     @classmethod
-    def lineValidate(cls, line, raiseException, complainUnrecognized):
+    def lineValidate(cls, line, raise_exception, complain_unrecognized):
         """Examine a line's parameters and values, return True if valid."""
-        # todo: remove used param line, raiseException, complainUnrecognized
-        if any([line, raiseException, complainUnrecognized]):
+        # todo: remove used param line, raise_exception, complain_unrecognized
+        if any([line, raise_exception, complain_unrecognized]):
             pass
         return True
 
@@ -188,7 +188,7 @@ class Behavior:
 
         cls.generateImplicitParameters(obj)
         if validate:
-            cls.validate(obj, raiseException=True)
+            cls.validate(obj, raise_exception=True)
 
         if obj.isNative:
             transformed = obj.transformFromNative()

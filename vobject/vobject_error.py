@@ -1,12 +1,12 @@
 class VObjectError(Exception):
-    def __init__(self, msg, lineNumber=None):
+    def __init__(self, msg, line_number=None):
         self.msg = msg
-        if lineNumber is not None:
-            self.lineNumber = lineNumber
+        if line_number is not None:
+            self.line_number = line_number
 
     def __str__(self):
         if hasattr(self, "lineNumber"):
-            return f"At line {self.lineNumber!s}: {self.msg!s}"
+            return f"At line {self.line_number!s}: {self.msg!s}"
         else:
             return repr(self.msg)
 

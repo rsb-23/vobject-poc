@@ -224,7 +224,7 @@ class TestIcalendar(TestCase):
         Ensure date valued UNTILs in rrules are in a reasonable timezone,
         and include that day (12/28 in this test)
         """
-        test_file = get_test_file("recurrence.ics")
+        test_file = get_test_file("recurrence.ics")  # sourcery skip
         cal = base.readOne(test_file)
         dates = list(cal.vevent.getrruleset())
         self.assertEqual(dates[0], dt.datetime(2006, 1, 26, 23, 0, tzinfo=tzutc()))
@@ -242,24 +242,24 @@ class TestIcalendar(TestCase):
 
         # rruleset should be None at this point.
         # No rules have been passed or created.
-        self.assertEqual(vevent.rruleset, None)
+        self.assertEqual(vevent.rruleset, None)  # noqa
 
         # Now add start and rule for recurring event
         vevent.add("dtstart").value = dt.datetime(2005, 1, 19, 9)
         vevent.add("rrule").value = "FREQ=WEEKLY;COUNT=2;INTERVAL=2;BYDAY=TU,TH"
-        self.assertEqual(list(vevent.rruleset), [dt.datetime(2005, 1, 20, 9, 0), dt.datetime(2005, 2, 1, 9, 0)])
+        self.assertEqual(list(vevent.rruleset), [dt.datetime(2005, 1, 20, 9, 0), dt.datetime(2005, 2, 1, 9, 0)])  # noqa
         self.assertEqual(
-            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
-            [dt.datetime(2005, 1, 19, 9, 0), dt.datetime(2005, 1, 20, 9, 0)],
+            list(vevent.getrruleset(add_rdate=True)), [dt.datetime(2005, 1, 19, 9, 0), dt.datetime(2005, 1, 20, 9, 0)]
         )
 
         # Also note that dateutil will expand all-day events (dt.date values)
         # to dt.datetime value with time 0 and no timezone.
         vevent.dtstart.value = dt.date(2005, 3, 18)
-        self.assertEqual(list(vevent.rruleset), [dt.datetime(2005, 3, 29, 0, 0), dt.datetime(2005, 3, 31, 0, 0)])
         self.assertEqual(
-            list(vevent.getrruleset(addRDate=True)),  # noqa # todo: check and remove noqa
-            [dt.datetime(2005, 3, 18, 0, 0), dt.datetime(2005, 3, 29, 0, 0)],
+            list(vevent.rruleset), [dt.datetime(2005, 3, 29, 0, 0), dt.datetime(2005, 3, 31, 0, 0)]  # noqa
+        )
+        self.assertEqual(
+            list(vevent.getrruleset(add_rdate=True)), [dt.datetime(2005, 3, 18, 0, 0), dt.datetime(2005, 3, 29, 0, 0)]
         )
 
     def _recurrence_test(self, file_name):
