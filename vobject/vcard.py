@@ -6,10 +6,8 @@ import codecs
 
 from . import behavior
 from .base import ContentLine, register_behavior
-from .helper import backslash_escape, logger
+from .helper import backslash_escape
 from .icalendar import stringToTextValues
-
-logger.name = __name__
 
 wacky_apple_photo_serialize = True
 REALLY_LARGE = 1e50
@@ -120,10 +118,10 @@ class VCardTextBehavior(behavior.Behavior):
     def decode(cls, line):
         """
         Remove backslash escaping from line.valueDecode line, either to remove
-        backslash espacing, or to decode base64 encoding. The content line should
+        backslash escaping, or to decode base64 encoding. The content line should
         contain a ENCODING=b for base64 encoding, but Apple Addressbook seems to
         export a singleton parameter of 'BASE64', which does not match the 3.0
-        vCard spec. If we encouter that, then we transform the parameter to
+        vCard spec. If we encounter that, then we transform the parameter to
         ENCODING=b
         """
         if line.encoded:
@@ -256,7 +254,7 @@ def toList(string_or_list) -> list[str]:
 
 def serializeFields(obj, order=None):
     """
-    Turn an object's fields into a ';' and ',' seperated string.
+    Turn an object's fields into a ';' and ',' separated string.
 
     If order is None, obj should be a list, backslash escape each field and
     return a ';' separated string.

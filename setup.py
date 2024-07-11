@@ -11,7 +11,7 @@ or (experimentally) hCalendar unicode strings.
 Requirements
 ------------
 
-Requires python 3.7 or later, dateutil 2.7.0 or later and pytz.
+Requires python 3.9 or later, dateutil 2.7.0 or later and pytz.
 
 Recent changes
 --------------

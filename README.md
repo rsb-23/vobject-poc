@@ -3,7 +3,7 @@
 [![PyPI downloads](https://img.shields.io/pypi/dm/vobject.svg)](https://pypi.python.org/pypi/vobject)
 [![Build](https://github.com/py-vobject/vobject/actions/workflows/test.yml/badge.svg)](https://github.com/py-vobject/vobject/actions/workflows/test.yml)
 [![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-
+[![pre-commit](https://github.com/rsb-23/vobject/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/rsb-23/vobject/actions/workflows/pre-commit.yml)
 > :warning: `latest` branch in under-development. It uses latest Python3 features.
 > Follow project [py-vobject/vobject](https://github.com/py-vobject/vobject) for stable releases.
 
@@ -55,7 +55,7 @@ Or download the package and run:
 python setup.py install
 ```
 
-VObject requires Python 3.7 or higher, along with the [dateutil](https://pypi.python.org/pypi/python-dateutil) and [pytz](https://pypi.python.org/pypi/pytz) packages.
+VObject requires Python 3.9 or higher, along with the [dateutil](https://pypi.python.org/pypi/python-dateutil) and [pytz](https://pypi.python.org/pypi/pytz) packages.
 
 
 # Running tests

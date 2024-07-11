@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from dateutil.tz import tzutc
 
-from vobject.base import fold_one_line, foldOneLine
+from vobject.base import fold_one_line
 from vobject.helper import indent_str
 from vobject.icalendar import date_to_string, datetime_to_string
 from vobject.vcard import toList
@@ -51,8 +51,3 @@ class TestAllFuncs(TestCase):
         buf = StringIO()
         fold_one_line(buf, test_input)
         self.assertEqual(buf.getvalue(), expected)
-
-        # TODO: remove after deprecation
-        buf_old = StringIO()
-        foldOneLine(buf_old, test_input)
-        self.assertEqual(buf_old.getvalue(), expected)

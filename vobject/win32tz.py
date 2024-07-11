@@ -1,14 +1,8 @@
 import datetime
 import struct
+import winreg  # noqa : available in py39-py312
 
 from .helper import deprecated
-
-try:
-    # py3.9 and above
-    import winreg
-except ImportError:
-    # py3.7 and py3.8
-    import _winreg as winreg  # noqa I for compatibility
 
 handle = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
 tzparent = winreg.OpenKey(handle, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones")

@@ -16,7 +16,6 @@ from .helper import backslash_escape, deprecated, get_buffer, get_random_int, in
 from .helper.imports_ import base64, contextlib, partial, re
 from .vobject_error import NativeError, ParseError, ValidateError, VObjectError
 
-logger.name = __name__
 # ------------------------------- Constants ------------------------------------
 DATENAMES = ("rdate", "exdate")
 RULENAMES = ("exrule", "rrule")

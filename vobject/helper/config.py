@@ -5,7 +5,7 @@ from io import StringIO
 logger = logging.getLogger(__name__)
 if not logging.getLogger().handlers:
     handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(name)s:%(lineno)d %(levelname)s %(message)s")
+    formatter = logging.Formatter("%(filename)s:%(lineno)d %(levelname)s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 logger.setLevel(logging.INFO)  # modify log levels here

@@ -26,20 +26,6 @@ services:
       args:
         PYTHON_VERSION: 2.7
     image: vobject:py27
-  py37:
-    build:
-      context: .
-      dockerfile: extras/Dockerfile
-      args:
-        PYTHON_VERSION: 3.7
-    image: vobject:py37
-  py38:
-    build:
-      context: .
-      dockerfile: extras/Dockerfile
-      args:
-        PYTHON_VERSION: 3.8
-    image: vobject:py38
   py39:
     build:
       context: .

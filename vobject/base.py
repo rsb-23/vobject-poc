@@ -9,8 +9,6 @@ from .helper import byte_decoder, deprecated, get_buffer, indent_str, logger, sp
 from .helper.imports_ import TextIO, contextlib, copy, lru_cache, re, sys
 from .vobject_error import NativeError, ParseError, VObjectError
 
-logger.name = __name__
-
 
 def to_unicode(value):
     """Converts a string argument to a unicode string.
@@ -864,49 +862,6 @@ def dquoteEscape(param):
         if char in param:
             return f'"{param}"'
     return param
-
-
-@deprecated
-def foldOneLine(outbuf, input_, lineLength=75):  # sourcery skip: extract-method
-    """
-    Folding line procedure that ensures multi-byte utf-8 sequences are not
-    broken across lines
-
-    TO-DO: This all seems odd. Is it still needed, especially in python3?
-    """
-
-    def outbuf_write(msg) -> None:
-        try:
-            outbuf.write(bytes(msg, "UTF-8"))
-        except TypeError:
-            # fall back on py2 syntax
-            outbuf.write(msg)
-
-    if len(input_) < lineLength:
-        # Optimize for unfolded line case
-        outbuf_write(input_)
-
-    else:
-        # Look for valid utf8 range and write that out
-        start = 0  # sourcery skip: low-code-quality
-        written = 0
-        counter = 0  # counts line size in bytes
-        decoded = to_unicode(input_)
-        length = len(to_basestring(input_))
-        while written < length:
-            s = decoded[start]  # take one char
-            size = len(to_basestring(s))  # calculate it's size in bytes
-            if counter + size > lineLength:
-                outbuf_write("\r\n ")
-                counter = 1  # one for space
-
-            outbuf_write(s)
-
-            written += size
-            counter += size
-            start += 1
-
-    outbuf_write("\r\n")
 
 
 def fold_one_line(outbuf: TextIO, input_: str, line_length=75):
