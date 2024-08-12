@@ -843,6 +843,17 @@ class TestIcalendar(unittest.TestCase):
         self.assertEqual(dates[1], datetime.datetime(2013, 1, 24, 0, 0))
         self.assertEqual(dates[-1], datetime.datetime(2013, 3, 28, 0, 0))
 
+    def test_issue50(self):
+        """
+        Ensure leading spaces in a DATE-TIME value are ignored when not in
+        strict mode.
+
+        See https://github.com/py-vobject/vobject/issues/50
+        """
+        test_file = get_test_file("vobject_0050.ics")
+        cal = base.readOne(test_file)
+        self.assertEqual(datetime.datetime(2024, 8, 12, 22, 30, tzinfo=tzutc()), cal.vevent.dtend.value)
+
 
 class TestChangeTZ(unittest.TestCase):
     """
