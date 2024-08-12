@@ -1726,10 +1726,13 @@ def stringToDate(s):
     return datetime.date(year, month, day)
 
 
-def stringToDateTime(s, tzinfo=None):
+def stringToDateTime(s, tzinfo=None, strict=False):
     """
     Returns datetime.datetime object.
     """
+    if not strict:
+        s = s.strip()
+
     try:
         year = int(s[0:4])
         month = int(s[4:6])
