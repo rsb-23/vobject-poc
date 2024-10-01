@@ -444,6 +444,16 @@ class TestGeneralFileParsing(unittest.TestCase):
              ['NEXT', 'Nope'], ['BAR']]
         )
 
+    def test_quoted_printable(self):
+        """
+        The use of QUOTED-PRINTABLE encoding
+        """
+        ics_str = get_test_file("quoted-printable.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
 
 class TestVcards(unittest.TestCase):
     """
@@ -979,6 +989,34 @@ class TestCompatibility(unittest.TestCase):
 
     def test_radicale_0827(self):
         ics_str = get_test_file("radicale-0827.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_0(self):
+        ics_str = get_test_file("radicale-1238-0.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_1(self):
+        ics_str = get_test_file("radicale-1238-1.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_2(self):
+        ics_str = get_test_file("radicale-1238-2.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_3(self):
+        ics_str = get_test_file("radicale-1238-3.ics")
         vobjs = base.readComponents(ics_str, allowQP=True)
         for vo in vobjs:
             self.assertIsNotNone(vo)
