@@ -1,4 +1,4 @@
-"""
+r"""
 hCalendar: A microformat for serializing iCalendar data
           (http://microformats.org/wiki/hcalendar)
 
