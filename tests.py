@@ -221,7 +221,7 @@ class TestBehaviors(unittest.TestCase):
              'CATEGORIES', 'CLASS', 'COMMENT', 'COMPLETED', 'CONTACT',
              'CREATED', 'DAYLIGHT', 'DESCRIPTION', 'DTEND', 'DTSTAMP',
              'DTSTART', 'DUE', 'DURATION', 'EXDATE', 'EXRULE', 'FN', 'FREEBUSY',
-             'LABEL', 'LAST-MODIFIED', 'LOCATION', 'METHOD', 'N', 'ORG',
+             'GEO', 'LABEL', 'LAST-MODIFIED', 'LOCATION', 'METHOD', 'N', 'ORG',
              'PHOTO', 'PRODID', 'RDATE', 'RECURRENCE-ID', 'RELATED-TO',
              'REQUEST-STATUS', 'RESOURCES', 'RRULE', 'STANDARD', 'STATUS',
              'SUMMARY', 'TRANSP', 'TRIGGER', 'UID', 'VALARM', 'VAVAILABILITY',
