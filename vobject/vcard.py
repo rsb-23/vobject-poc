@@ -180,7 +180,8 @@ class VCard3_0(VCardBehavior):
         'ADR':        (0, None, None),
         'ORG':        (0, None, None),
         'PHOTO':      (0, None, None),
-        'CATEGORIES': (0, None, None)
+        'CATEGORIES': (0, None, None),
+        'GEO':        (0, None, None)
     }
 
     @classmethod
@@ -206,6 +207,13 @@ class Label(VCardTextBehavior):
     name = "Label"
     description = 'Formatted address'
 registerBehavior(Label)
+
+
+class GEO(VCardBehavior):
+    name = "GEO"
+    description = "Geographical location"
+registerBehavior(GEO)
+
 
 wacky_apple_photo_serialize = True
 REALLY_LARGE = 1E50

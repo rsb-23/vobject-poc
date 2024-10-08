@@ -1022,6 +1022,16 @@ class TestCompatibility(unittest.TestCase):
             self.assertIsNotNone(vo)
         return
 
+    def test_radicale_1587(self):
+        vcf_str = get_test_file("radicale-1587.vcf")
+        vobjs = base.readComponents(vcf_str)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+            lines = vo.serialize().split("\r\n")
+            for line in lines:
+                if line.startswith("GEO"):
+                    self.assertEqual(line, "GEO:37.386013;-122.082932")
+        return
 
 if __name__ == '__main__':
     unittest.main()
