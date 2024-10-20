@@ -375,14 +375,11 @@ class ContentLine(VBase):
         """
         return self.behavior.valueRepr(self) if self.behavior else self.value
 
-    def __str__(self):
+    def __repr__(self):
         try:
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
         except UnicodeEncodeError:
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr().encode("utf-8"))
-
-    def __repr__(self):
-        return str(self)
 
     def __unicode__(self):
         return f"<{self.name}{self.params}{self.valueRepr()}>"
@@ -633,14 +630,11 @@ class Component(VBase):
                     child.behavior = None
                     child.parentBehavior = None
 
-    def __str__(self):
+    def __repr__(self):
         if self.name:
             return f"<{self.name}| {self.getSortedChildren()}>"
         else:
             return f"<*unnamed*| {self.getSortedChildren()}>"
-
-    def __repr__(self):
-        return str(self)
 
     @deprecated
     def prettyPrint(self, level=0, tabwidth=3):

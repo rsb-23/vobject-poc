@@ -336,11 +336,8 @@ class TimezoneComponent(Component):
         # there was no standard time in 2000!
         raise VObjectError(f"Unable to guess TZID for tzinfo {tzinfo}")
 
-    def __str__(self):
-        return f"<VTIMEZONE | {getattr(self, 'tzid', 'No TZID')}>"
-
     def __repr__(self):
-        return self.__str__()
+        return f"<VTIMEZONE | {getattr(self, 'tzid', 'No TZID')}>"
 
     @deprecated
     def prettyPrint(self, level=0, tabwidth=3):

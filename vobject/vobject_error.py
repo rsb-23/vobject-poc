@@ -5,7 +5,7 @@ class VObjectError(Exception):
             self.line_number = line_number
 
     def __str__(self):
-        if hasattr(self, "lineNumber"):
+        if hasattr(self, "line_number"):
             return f"At line {self.line_number!s}: {self.msg!s}"
         else:
             return repr(self.msg)
