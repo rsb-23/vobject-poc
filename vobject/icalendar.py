@@ -44,7 +44,7 @@ WEEKDAYS = "MO", "TU", "WE", "TH", "FR", "SA", "SU"
 FREQUENCIES = ('YEARLY', 'MONTHLY', 'WEEKLY', 'DAILY', 'HOURLY', 'MINUTELY',
                'SECONDLY')
 
-zeroDelta = datetime.timedelta(0)
+ZERO_DELTA = datetime.timedelta(0)
 twoHours = datetime.timedelta(hours=2)
 
 
@@ -330,28 +330,30 @@ class TimezoneComponent(Component):
         """
         Given a tzinfo class, use known APIs to determine TZID, or use tzname.
         """
+
+        # If tzinfo is UTC, we don't need a TZID
         if tzinfo is None or (not allowUTC and tzinfo_eq(tzinfo, utc)):
-            # If tzinfo is UTC, we don't need a TZID
             return None
-        # try Pytz's tzid key
+
+        # Try pytz tzid key
         if hasattr(tzinfo, 'tzid'):
             return toUnicode(tzinfo.tzid)
 
-        # try pytz zone key
+        # Try pytz zone key
         if hasattr(tzinfo, 'zone'):
             return toUnicode(tzinfo.zone)
 
-        # try tzical's tzid key
-        elif hasattr(tzinfo, '_tzid'):
+        # Try tzical's tzid key
+        if hasattr(tzinfo, '_tzid'):
             return toUnicode(tzinfo._tzid)
-        else:
-            # return tzname for standard (non-DST) time
-            notDST = datetime.timedelta(0)
-            for month in range(1, 13):
-                dt = datetime.datetime(2000, month, 1)
-                if tzinfo.dst(dt) == notDST:
-                    return toUnicode(tzinfo.tzname(dt))
-        # there was no standard time in 2000!
+
+        # Return tzname for standard (non-DST) time
+        for month in range(1, 13):
+            dt = datetime.datetime(2000, month, 1)
+            if tzinfo.dst(dt) == ZERO_DELTA:
+                return toUnicode(tzinfo.tzname(dt))
+
+        # There was no standard time in 2000!
         raise VObjectError("Unable to guess TZID for tzinfo {0!s}"
                            .format(tzinfo))
 
@@ -1744,8 +1746,8 @@ def stringToDateTime(s, tzinfo=None, strict=False):
             tzinfo = getTzid('UTC')
     except:
         raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s))
-    year = year and year or 2000
-    if tzinfo is not None and hasattr(tzinfo,'localize'):  # PyTZ case
+    year = year if year else 2000
+    if tzinfo is not None and hasattr(tzinfo,'localize'):  # Cater for pytz tzinfo instanes
         return tzinfo.localize(datetime.datetime(year, month, day, hour, minute, second))
     return datetime.datetime(year, month, day, hour, minute, second, 0, tzinfo)
 
@@ -2018,7 +2020,7 @@ def getTransition(transitionTo, year, tzinfo):
     if transitionTo == 'daylight':
         def test(dt):
             try:
-                return tzinfo.dst(dt) != zeroDelta
+                return tzinfo.dst(dt) != ZERO_DELTA
             except pytz.NonExistentTimeError:
                 return True  # entering daylight time
             except pytz.AmbiguousTimeError:
@@ -2026,7 +2028,7 @@ def getTransition(transitionTo, year, tzinfo):
     elif transitionTo == 'standard':
         def test(dt):
             try:
-                return tzinfo.dst(dt) == zeroDelta
+                return tzinfo.dst(dt) == ZERO_DELTA
             except pytz.NonExistentTimeError:
                 return False  # entering daylight time
             except pytz.AmbiguousTimeError:
