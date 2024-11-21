@@ -81,7 +81,7 @@ from . import icalendar, vcard
 
 
 # Package version
-VERSION = "0.9.9"
+__version__ = VERSION = "1.0.0"
 
 
 def iCalendar():
