@@ -1,18 +1,24 @@
-# VObject 
+# VObject
 [![PyPI version](https://badge.fury.io/py/vobject.svg)](https://pypi.python.org/pypi/vobject)
 [![PyPI downloads](https://img.shields.io/pypi/dm/vobject.svg)](https://pypi.python.org/pypi/vobject)
 [![Build](https://github.com/py-vobject/vobject/actions/workflows/test.yml/badge.svg)](https://github.com/py-vobject/vobject/actions/workflows/test.yml)
 [![License](https://img.shields.io/pypi/l/vobject.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-VObject is intended to be a full-featured Python package for parsing and 
-generating vCard and vCalendar files.
+VObject is intended to be a full-featured Python package for parsing and
+generating Card and Calendar files.
 
-Currently, iCalendar files are supported and well tested. vCard 3.0 files are 
-supported, and all data should be imported, but only a few components are 
-understood in a sophisticated way. 
+Currently, iCalendar files are supported and well tested. vCard 3.0 files are
+supported, and all data should be imported, but only a few components are
+understood in a sophisticated way.
 
-The [Calendar Server](http://calendarserver.org/) team has added VAVAILABILITY 
-support to VObject's iCalendar parsing. 
+The [Calendar Server](http://calendarserver.org/) team has added VAVAILABILITY
+support to VObject's iCalendar parsing.
+
+There are two series of releases:
+* Versions 0.9.x continue to support Python 2.7.  This branch is maintained 
+  only for backward compatibility, and does not get new features.
+* Versions 1.x support only Python 3.8 or later, and is the focus of
+  ongoing feature development.
 
 Please report bugs and issues directly on [GitHub](https://github.com/py-vobject/vobject/issues).
 
@@ -24,14 +30,14 @@ Useful scripts included with VObject:
 * [change_tz](https://github.com/py-vobject/vobject/blob/master/vobject/change_tz.py): Take an iCalendar file with events in the wrong timezone, change all events or just UTC events into one of the timezones **pytz** supports. Requires [pytz](https://pypi.python.org/pypi/pytz/).
 
 # History
-VObject was originally developed in concert with the Open Source Application 
+VObject was originally developed in concert with the Open Source Application
 Foundation's _Chandler_ project by Jeffrey Harris.  Maintenance was later
-passed to [Sameen Karim](https://github.com/skarim) and 
+passed to [Sameen Karim](https://github.com/skarim) and
 [Will Percival](https://github.com/wpercy) at [Eventable](https://github.com/eventable).
 After several years of inactivity, the project was revived under a dedicated
 GitHub organization, with new volunteers.
 
-**Please note**: the original repository at [eventable/vobject](https://github.com/eventable/vobject/) 
+**Please note**: the original repository at [eventable/vobject](https://github.com/eventable/vobject/)
 is _unmaintained_.  This project forked the latest code from that repository, after
 attempts to revive the existing project with new maintainers were unsuccessful.
 
@@ -268,7 +274,7 @@ serializing will add any required computable attributes (like 'VERSION')
     params for  EMAIL:
        TYPE ['INTERNET']
     FN: Jeffrey Harris
-    N:  Jeffrey  Harris 
+    N:  Jeffrey  Harris
 ```
 
 #### Parsing vCard objects
