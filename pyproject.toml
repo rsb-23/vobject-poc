@@ -1,0 +1,81 @@
+[build-system]
+requires = ["flit_core >= 3.4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "vobject"
+description = "Python Calendar and Address object management"
+readme = "README.md"
+license = {file = "LICENSE-2.0.txt"}
+keywords = []
+
+dynamic = ["version"]
+dependencies = [
+    "python-dateutil >= 2.5.0; python_version < '3.10'",
+    "python-dateutil >= 2.7.0; python_version >= '3.10'",
+    "pytz >= 2019.1",
+    "six",
+]
+requires-python = ">= 3.8"
+authors = [
+]
+
+maintainers = [
+    {name = "David Arnold", email = "davida@pobox.com"}
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing",
+]
+
+[project.urls]
+homepage = "http://py-vobject.github.io/"
+source = "https://github.com/py-vobject/vobject"
+download = "https://github.com/py-vobject/vobject/releases"
+issues = "https://github.com/py-vobject/vobject/issues"
+
+[project.scripts]
+ics_diff = "vobject.ics_diff:main"
+change_tz = "vobject.change_tz:main"
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "coverage",
+    "flake8",
+    "flit",
+    "pylint",
+    "pytest",
+    "sphinx",
+]
+
+[tool.flit.module]
+name = "vobject"
+
+[tool.flit.sdist]
+include = [
+    "ACKNOWLEDGEMENTS.txt",
+    "test_files/*.ics",
+    "test_files/*.vcf",
+]
+
+[tool.flake8]
+max-line-length = "88"
+extend-ignore = ["E203", "E701"]
+
+[tool.pylint.format]
+max-line-length = "88"

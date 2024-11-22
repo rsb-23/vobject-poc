@@ -221,7 +221,7 @@ class TestBehaviors(unittest.TestCase):
              'CATEGORIES', 'CLASS', 'COMMENT', 'COMPLETED', 'CONTACT',
              'CREATED', 'DAYLIGHT', 'DESCRIPTION', 'DTEND', 'DTSTAMP',
              'DTSTART', 'DUE', 'DURATION', 'EXDATE', 'EXRULE', 'FN', 'FREEBUSY',
-             'LABEL', 'LAST-MODIFIED', 'LOCATION', 'METHOD', 'N', 'ORG',
+             'GEO', 'LABEL', 'LAST-MODIFIED', 'LOCATION', 'METHOD', 'N', 'ORG',
              'PHOTO', 'PRODID', 'RDATE', 'RECURRENCE-ID', 'RELATED-TO',
              'REQUEST-STATUS', 'RESOURCES', 'RRULE', 'STANDARD', 'STATUS',
              'SUMMARY', 'TRANSP', 'TRIGGER', 'UID', 'VALARM', 'VAVAILABILITY',
@@ -443,6 +443,16 @@ class TestGeneralFileParsing(unittest.TestCase):
             [['ALTREP', 'http://www.wiz.org;;', 'Blah', 'Foo'],
              ['NEXT', 'Nope'], ['BAR']]
         )
+
+    def test_quoted_printable(self):
+        """
+        The use of QUOTED-PRINTABLE encoding
+        """
+        ics_str = get_test_file("quoted-printable.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
 
 
 class TestVcards(unittest.TestCase):
@@ -843,6 +853,17 @@ class TestIcalendar(unittest.TestCase):
         self.assertEqual(dates[1], datetime.datetime(2013, 1, 24, 0, 0))
         self.assertEqual(dates[-1], datetime.datetime(2013, 3, 28, 0, 0))
 
+    def test_issue50(self):
+        """
+        Ensure leading spaces in a DATE-TIME value are ignored when not in
+        strict mode.
+
+        See https://github.com/py-vobject/vobject/issues/50
+        """
+        test_file = get_test_file("vobject_0050.ics")
+        cal = base.readOne(test_file)
+        self.assertEqual(datetime.datetime(2024, 8, 12, 22, 30, tzinfo=tzutc()), cal.vevent.dtend.value)
+
 
 class TestChangeTZ(unittest.TestCase):
     """
@@ -973,6 +994,44 @@ class TestCompatibility(unittest.TestCase):
             self.assertIsNotNone(vo)
         return
 
+    def test_radicale_1238_0(self):
+        ics_str = get_test_file("radicale-1238-0.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_1(self):
+        ics_str = get_test_file("radicale-1238-1.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_2(self):
+        ics_str = get_test_file("radicale-1238-2.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1238_3(self):
+        ics_str = get_test_file("radicale-1238-3.ics")
+        vobjs = base.readComponents(ics_str, allowQP=True)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+        return
+
+    def test_radicale_1587(self):
+        vcf_str = get_test_file("radicale-1587.vcf")
+        vobjs = base.readComponents(vcf_str)
+        for vo in vobjs:
+            self.assertIsNotNone(vo)
+            lines = vo.serialize().split("\r\n")
+            for line in lines:
+                if line.startswith("GEO"):
+                    self.assertEqual(line, "GEO:37.386013;-122.082932")
+        return
 
 if __name__ == '__main__':
     unittest.main()
