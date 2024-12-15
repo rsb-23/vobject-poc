@@ -29,7 +29,7 @@ except ImportError:
     pytz = Pytz  # keeps quantifiedcode happy
 
 from . import behavior
-from .base import (VObjectError, NativeError, ValidateError, ParseError,
+from .base import (VERSION, VObjectError, NativeError, ValidateError, ParseError,
                    Component, ContentLine, logger, registerBehavior,
                    backslashEscape, foldOneLine)
 
@@ -38,7 +38,7 @@ from .base import (VObjectError, NativeError, ValidateError, ParseError,
 DATENAMES = ("rdate", "exdate")
 RULENAMES = ("exrule", "rrule")
 DATESANDRULES = ("exrule", "rrule", "rdate", "exdate")
-PRODID = u"-//PYVOBJECT//NONSGML Version 1//EN"
+PRODID = u"-//PYVOBJECT//NONSGML Version %s//EN" % VERSION
 
 WEEKDAYS = "MO", "TU", "WE", "TH", "FR", "SA", "SU"
 FREQUENCIES = ('YEARLY', 'MONTHLY', 'WEEKLY', 'DAILY', 'HOURLY', 'MINUTELY',
