@@ -9,6 +9,10 @@ import re
 import six
 import sys
 
+# Package version
+VERSION = "1.0.0"
+
+
 # ------------------------------------ Python 2/3 compatibility challenges  ----
 # Python 3 no longer has a basestring type, so....
 try:

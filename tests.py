@@ -12,7 +12,7 @@ import json
 from dateutil.tz import tzutc
 from dateutil.rrule import rrule, rruleset, WEEKLY, MONTHLY
 
-from vobject import base, iCalendar
+from vobject import VERSION, base, iCalendar
 from vobject import icalendar
 
 from vobject.base import __behaviorRegistry as behavior_registry
@@ -56,7 +56,7 @@ class TestCalendarSerializing(unittest.TestCase):
         """
         CreateCalendar 2.0 format from scratch
         """
-        test_cal = get_test_file("simple_2_0_test.ics")
+        test_cal = get_test_file("simple_2_0_test.ics") % VERSION
         cal = base.newFromBehavior('vcalendar', '2.0')
         cal.add('vevent')
         cal.vevent.add('dtstart').value = datetime.datetime(2006, 5, 9)
