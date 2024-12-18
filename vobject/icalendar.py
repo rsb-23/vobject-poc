@@ -363,7 +363,7 @@ class TimezoneComponent(Component):
     def __repr__(self):
         return self.__str__()
 
-    def prettyPrint(self, level, tabwidth):
+    def prettyPrint(self, level=0, tabwidth=3):
         pre = ' ' * level * tabwidth
         print(pre, self.name)
         print(pre, "TZID:", self.tzid)
