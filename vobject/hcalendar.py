@@ -28,7 +28,7 @@ and an equivalent event in hCalendar format with various elements optimized appr
 </span>
 """
 
-import six
+import io
 
 from datetime import date, datetime, timedelta
 
@@ -45,7 +45,7 @@ class HCalendar(VCalendar2_0):
         Serialize iCalendar to HTML using the hCalendar microformat (http://microformats.org/wiki/hcalendar)
         """
 
-        outbuf = buf or six.StringIO()
+        outbuf = buf or io.StringIO()
         level = 0  # holds current indentation level
         tabwidth = 3
 
