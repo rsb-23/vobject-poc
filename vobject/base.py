@@ -6,7 +6,7 @@ import copy
 import codecs
 import logging
 import re
-import six
+import io
 import sys
 
 # Package version
@@ -858,7 +858,7 @@ def getLogicalLines(fp, allowQP=True):
     Quoted-printable data will be decoded in the Behavior decoding phase.
 
     # We're leaving this test in for awhile, because the unittest was ugly and dumb.
-    >>> from six import StringIO
+    >>> from io import StringIO
     >>> f=StringIO(testLines)
     >>> for n, l in enumerate(getLogicalLines(f)):
     ...     print("Line %s: %s" % (n, l[0]))
@@ -881,7 +881,7 @@ def getLogicalLines(fp, allowQP=True):
 
     else:
         quotedPrintable = False
-        newbuffer = six.StringIO
+        newbuffer = io.StringIO
         logicalLine = newbuffer()
         lineNumber = 0
         lineStartNumber = 0
@@ -996,7 +996,7 @@ def defaultSerialize(obj, buf, lineLength):
     """
     Encode and fold obj and its children, write to buf or return a string.
     """
-    outbuf = buf or six.StringIO()
+    outbuf = buf or io.StringIO()
 
     if isinstance(obj, Component):
         if obj.group is None:
@@ -1018,7 +1018,7 @@ def defaultSerialize(obj, buf, lineLength):
         if obj.behavior and not startedEncoded:
             obj.behavior.encode(obj)
 
-        s = six.StringIO()
+        s = io.StringIO()
 
         if obj.group is not None:
             s.write(obj.group + '.')
@@ -1082,7 +1082,7 @@ def readComponents(streamOrString, validate=False, transform=True,
     Generate one Component at a time from a stream.
     """
     if isinstance(streamOrString, basestring):
-        stream = six.StringIO(streamOrString)
+        stream = io.StringIO(streamOrString)
     else:
         stream = streamOrString
 
