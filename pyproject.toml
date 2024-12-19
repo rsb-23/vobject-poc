@@ -78,3 +78,12 @@ extend-ignore = ["E203", "E701"]
 
 [tool.pylint.format]
 max-line-length = "88"
+
+[tool.tox]
+requires = ["tox>=4.19"]
+env_list = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
+[tool.tox.env_run_base]
+description = "Run test under {base_python}"
+deps = ["pytest"]
+commands = [["pytest"]]
