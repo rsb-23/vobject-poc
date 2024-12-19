@@ -503,6 +503,7 @@ def test_issue50():
 
 def test_includes_dst_offset():
     tz = dateutil.tz.gettz('us/eastern')
+    assert tz is not None
 
     # Simple first
     dt = datetime.datetime(2020, 1, 1)
@@ -519,9 +520,13 @@ def test_omits_dst_offset():
     # Check dateutil, pytz, and zoneinfo (3.9+) tzinfo instances
     timezones = []
     if 'dateutil' in globals():
-        timezones.append(dateutil.tz.gettz('us/eastern'))
+        tz = dateutil.tz.gettz('us/eastern')
+        assert tz is not None
+        timezones.append(tz)
     if 'zoneinfo' in globals():
-        timezones.append(zoneinfo.ZoneInfo('us/eastern'))
+        tz = zoneinfo.ZoneInfo('us/eastern')
+        assert tz is not None
+        timezones.append(tz)
 
     for tz in timezones:
         dt = datetime.datetime(2020, 1, 1)
