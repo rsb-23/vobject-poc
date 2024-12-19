@@ -14,7 +14,8 @@ Introduction
 and *iCalendar* (aka *vCalendar*) objects, used for sharing and storage
 of personal contacts and calendar events.
 
-It supports Python 2.7 in addition to Python 3.7 or later.
+It supports Python 3.8 or later.  Releases in the 0.9.x series support
+Python 2.7, and earlier releases of Python 3.
 
 This document gives an overview of the *vCard* and *iCalendar* standards,
 sufficient to begin using the package to generate or parse those that you
@@ -121,10 +122,10 @@ Or using their names to access them directly as attributes:
     3.0
     >>>
 
-When accessed as directly named attributes of the parsed item,
-singleton properties *aren't* a list: you can access their valu If the
-child has parameters, in addition to its value, they are available as
-a dictionary:
+When accessed as named attributes of the parsed item, singleton
+properties *aren't* a list: you can access their value directly.  If
+the child has parameters, in addition to its value, they are available
+as a dictionary:
 
 .. code-block:: python
     :linenos:
@@ -146,7 +147,7 @@ vCards, for example:
     USA
     >>>
 
-vObjects can be created by parsing (as above), by using a helper
+vObjects can be created by parsing (as above), or by using a helper
 function:
 
 .. code-block:: python
@@ -234,7 +235,7 @@ useful to archive the source code for auditing or similar purposes.
 Installing a wheel
 ~~~~~~~~~~~~~~~~~~
 If you've downloaded a *wheel* file (it should have a ``.whl`` suffix),
-you can install it using ``pip``:
+you can install it using ``pip`` as well:
 
 .. code-block:: shell
 
@@ -284,27 +285,6 @@ the ``-e`` parameter).  An editable install directly uses the files in
 your checkout area, including any local modifications you've made at
 the time you imported the package.
 
-Installing with setup.py (Deprecated)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There should be no need to do this: use ``pip`` instead.  But for
-completeness, you can directly call the ``setup.py`` script to build
-and install the package.
-
-Activate the virtual environment to be used for development, and then,
-from the root directory of the source distribution, run:
-
-.. code-block:: shell
-
-    python setup.py build
-    python setup.py install
-
-There are various arguments you can supply for ``setup.py``'s *install*
-command overriding the default install location.  ``python setup.py
-install --help`` explains them.
-
-This method is not officially supported, and will soon become obsolete
-as the Python ecosystem moves away from ``setup.py``.
-
 
 .. #####################################################################
 
@@ -351,10 +331,11 @@ Calendars and Cards
 .. index:: Apple, AT&T, IBM, IETF, Internet Mail Consortium, Lucent, Siemens, Versit Consortium
 .. index:: vCard, vCalendar, iCalendar
 
-The *vCard* and *vCalendar* specifications were originally developed by the
-Versit Consortium, with contributions from Apple, IBM, AT&T/Lucent, and
-Siemens.  Their stewardship subsequently passed to the Internet Mail
-Consortium, before later being adopted by the IETF.
+The *vCard* and *vCalendar* specifications were originally developed
+by the Versit Consortium (and that's why they're named with a leading
+"v"), with contributions from Apple, IBM, AT&T/Lucent, and Siemens.
+Their stewardship subsequently passed to the Internet Mail Consortium,
+before the standards were later adopted by the IETF.
 
 Within the IETF, vCard versions 3.0 and 4.0, and a revised and expanded
 calendar specification renamed to *iCalendar* 2.0 have been published,
@@ -401,7 +382,7 @@ exist, as well as HTML microformats.
 
 More recent work in the IETF is looking to revise the semantic models
 of vCard and iCalendar, proposing new standards that can be translated
-to and from vCard and iCalendar, but add additional functionality.
+to and from vCard and iCalendar, but add extra functionality.
 
 vObject
 -------
@@ -884,8 +865,7 @@ Getting Help
 
 .. epigraph::
 
-    95=17|96=RAW DATA \\x00\\x01 VALUE|
-
+TBD
 
 .. _GitHub: https://github.com/py-vobject/vobject
 .. _Python: http://www.python.org/
