@@ -350,7 +350,7 @@ class TimezoneComponent(Component):
         # Return tzname for standard (non-DST) time
         for month in range(1, 13):
             dt = datetime.datetime(2000, month, 1)
-            if tzinfo.dst(dt) == ZERO_DELTA:
+            if tzinfo.dst(dt) == ZERO_DELTA or tzinfo.dst(dt) is None:
                 return toUnicode(tzinfo.tzname(dt))
 
         # There was no standard time in 2000!
@@ -1979,23 +1979,61 @@ def stringToPeriod(s, tzinfo=None):
         return (start, stringToDateTime(valEnd, tzinfo))
 
 
+def includes_dst_offset(tz_info: datetime.tzinfo, dt: datetime.datetime) -> bool:
+    """Returns True if imezone includes a DST offset at specified moment
+
+    @param tz_info: Concrete timezone to use for check
+    @param dt: Datetime instant to check for Daylight Savings Time
+    @returns True if instant includes a DST offset, False otherwise."""
+
+    if dt.tzinfo is not None:
+        raise ValueError("Must use naive datetime for 'dt' parameter")
+
+    try:
+        return tz_info.dst(dt) != ZERO_DELTA
+    except pytz.NonExistentTimeError:
+        return True  # entering daylight time
+    except pytz.AmbiguousTimeError:
+        return False  # entering standard time
+
+
+def omits_dst_offset(tz_info: datetime.tzinfo, dt: datetime.datetime) -> bool:
+    """Return True if timezone does NOT include a DST offset at specified moment
+
+    @param tz_info: Concrete timezone to use for check
+    @param dt: Naive datetime instant to check for Daylight Savings Time
+    @returns True if instant DOES NOT include a DST offset, False otherwise."""
+
+    if dt.tzinfo is not None:
+        raise ValueError("Must use naive datetime for 'dt' parameter")
+
+    try:
+        delta = tz_info.dst(dt)
+        return delta == ZERO_DELTA
+    except pytz.NonExistentTimeError:
+        return False  # entering daylight time
+    except pytz.AmbiguousTimeError:
+        return True  # entering standard time
+
+
+def first_transition(tzinfo, iterDates, test):
+    """
+    Return the last date not matching test, or None if all tests matched.
+    """
+    result = None
+    for dt in iterDates:
+        if not test(tzinfo, dt):
+            result = dt
+        else:
+            if result is not None:
+                return result
+    return result  # may be None
+
+
 def getTransition(transitionTo, year, tzinfo):
     """
     Return the datetime of the transition to/from DST, or None.
     """
-    def firstTransition(iterDates, test):
-        """
-        Return the last date not matching test, or None if all tests matched.
-        """
-        success = None
-        for dt in iterDates:
-            if not test(dt):
-                success = dt
-            else:
-                if success is not None:
-                    return success
-        return success  # may be None
-
     def generateDates(year, month=None, day=None):
         """
         Iterate over possible dates with unspecified values.
@@ -2017,24 +2055,9 @@ def getTransition(transitionTo, year, tzinfo):
                 yield datetime.datetime(year, month, day, hour)
 
     assert transitionTo in ('daylight', 'standard')
-    if transitionTo == 'daylight':
-        def test(dt):
-            try:
-                return tzinfo.dst(dt) != ZERO_DELTA
-            except pytz.NonExistentTimeError:
-                return True  # entering daylight time
-            except pytz.AmbiguousTimeError:
-                return False  # entering standard time
-    elif transitionTo == 'standard':
-        def test(dt):
-            try:
-                return tzinfo.dst(dt) == ZERO_DELTA
-            except pytz.NonExistentTimeError:
-                return False  # entering daylight time
-            except pytz.AmbiguousTimeError:
-                return True  # entering standard time
+    test = includes_dst_offset if transitionTo == 'daylight' else omits_dst_offset
     newyear = datetime.datetime(year, 1, 1)
-    monthDt = firstTransition(generateDates(year), test)
+    monthDt = first_transition(tzinfo, generateDates(year), test)
     if monthDt is None:
         return newyear
     elif monthDt.month == 12:
@@ -2042,8 +2065,8 @@ def getTransition(transitionTo, year, tzinfo):
     else:
         # there was a good transition somewhere in a non-December month
         month = monthDt.month
-        day = firstTransition(generateDates(year, month), test).day
-        uncorrected = firstTransition(generateDates(year, month, day), test)
+        day = first_transition(tzinfo, generateDates(year, month), test).day
+        uncorrected = first_transition(tzinfo, generateDates(year, month, day), test)
         if transitionTo == 'standard':
             # assuming tzinfo.dst returns a new offset for the first
             # possible hour, we need to add one hour for the offset change
