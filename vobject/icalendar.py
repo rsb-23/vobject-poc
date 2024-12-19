@@ -10,7 +10,7 @@ import string
 import base64
 
 from dateutil import rrule, tz
-import six
+import io
 
 try:
     import pytz
@@ -56,7 +56,7 @@ def toUnicode(s):
     """
     Take a string or unicode, turn it into unicode, decoding as utf-8
     """
-    if isinstance(s, six.binary_type):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     return s
 
@@ -135,7 +135,7 @@ class TimezoneComponent(Component):
         good_lines = ('rdate', 'rrule', 'dtstart', 'tzname', 'tzoffsetfrom',
                       'tzoffsetto', 'tzid')
         # serialize encodes as utf-8, cStringIO will leave utf-8 alone
-        buffer = six.StringIO()
+        buffer = io.StringIO()
         # allow empty VTIMEZONEs
         if len(self.contents) == 0:
             return None
@@ -569,7 +569,7 @@ class RecurringComponent(Component):
                     self.add(name).value = setlist
             elif name in RULENAMES:
                 for rule in setlist:
-                    buf = six.StringIO()
+                    buf = io.StringIO()
                     buf.write('FREQ=')
                     buf.write(FREQUENCIES[rule._freq])
 
@@ -1010,7 +1010,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
             transformed = obj
             undoTransform = False
         out = None
-        outbuf = buf or six.StringIO()
+        outbuf = buf or io.StringIO()
         if obj.group is None:
             groupString = ''
         else:
