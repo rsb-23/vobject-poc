@@ -863,8 +863,6 @@ Common Problems
 Getting Help
 ============
 
-.. epigraph::
-
 TBD
 
 .. _GitHub: https://github.com/py-vobject/vobject
