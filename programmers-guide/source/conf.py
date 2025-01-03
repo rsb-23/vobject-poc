@@ -29,4 +29,13 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
+
+html_theme_options = {
+    'github_user': 'py-vobject',
+    'github_repo': 'vobject',
+    'github_type': 'star',
+    'github_button': 'true',
+    'github_count': 'true',
+}
+
 html_static_path = ['_static']
