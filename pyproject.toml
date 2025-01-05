@@ -40,9 +40,9 @@ classifiers = [
 
 [project.urls]
 homepage = "https://py-vobject.github.io/"
-repository = "https;//github.com/py-vobject/vobject"
 source = "https://github.com/py-vobject/vobject"
 download = "https://github.com/py-vobject/vobject/releases"
+documentation = "https://vobject.readthedocs.io"
 issues = "https://github.com/py-vobject/vobject/issues"
 
 [project.scripts]
@@ -70,8 +70,12 @@ name = "vobject"
 [tool.flit.sdist]
 include = [
     "ACKNOWLEDGEMENTS.txt",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "programmers-guide",
     "test_files/*.ics",
     "test_files/*.vcf",
+    "tests",
 ]
 
 [tool.flake8]
