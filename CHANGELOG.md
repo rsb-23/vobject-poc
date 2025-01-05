@@ -1,14 +1,39 @@
 Python vObject Release Notes
 ============================
 
-vobject 0.9.7 releases
+vobject 0.9.9 released
+--
+16 December 2024
+
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
+_dateutil_ and _six_ are required.
+Python 2.7 or higher is required.
+
+* Added product version to PRODID tag in iCalendar headers
+* Added support for GEO tags in vCards
+
+vobject 0.9.8 released
+--
+2 October 2024
+
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
+_dateutil_ and _six_ are required.
+Python 2.7 or higher is required.
+
+* Accumulated bug fixes
+
+vobject 0.9.7 released
 --
 24 February 2024
 
-To install, use `pip install vobject`, or download the archive and 
-untar, run `python setup.py install`. Tests can be run via `python 
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
-_dateutil_ and _six_ are required. 
+_dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
 
 * New repository: https://github.com/py-vobject/vobject
@@ -21,10 +46,10 @@ vobject 0.9.6 released
 --
 7 July 2018
 
-To install, use `pip install vobject`, or download the archive and 
-untar, run `python setup.py install`. Tests can be run via `python 
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
-_dateutil_ and _six_ are required. 
+_dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
 
 * Correctly order calendar properties before calendar components
@@ -42,7 +67,7 @@ vobject 0.9.5 released
 29 June 2017
 
 To install, use `pip install vobject`, or download the archive and
-untar, run `python setup.py install`. Tests can be run via `python 
+untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
 _dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
@@ -59,9 +84,9 @@ vobject 0.9.4.1 released
 --
 22 January 2017
 
-To install, use `pip install vobject`, or download the archive and 
-untar, run `python setup.py install`. Tests can be run via `python 
-setup.py test`. 
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
 _dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
 
@@ -71,9 +96,9 @@ vobject 0.9.4 released
 --
 20 January 2017
 
-To install, use `pip install vobject`, or download the archive and 
-untar, run `python setup.py install`. Tests can be run via `python 
-setup.py test`. 
+To install, use `pip install vobject`, or download the archive and
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
 _dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
 
@@ -86,7 +111,7 @@ vobject 0.9.3 released
 --
 26 August 2016
 
-To install, use `pip install vobject`, or download the archive and 
+To install, use `pip install vobject`, or download the archive and
 untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
 _dateutil_ and _six_ are required.
@@ -103,8 +128,8 @@ vobject 0.9.2 released
 13 March 2016
 
 To install, use `pip install vobject`, or download the archive and
-untar, run `python setup.py install`. Tests can be run via `python 
-setup.py test`. 
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
 _dateutil_ and _six_ are required.
 Python 2.7 or higher is required.
 
@@ -115,7 +140,7 @@ vobject 0.9.1 released
 --
 16 February 2016
 
-To install, use `pip install vobject`, or download the archive and 
+To install, use `pip install vobject`, or download the archive and
 untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
 _dateutil_ and _six_ are required.
@@ -128,8 +153,8 @@ vobject 0.9.0 released
 3 February 2016
 
 To install, use `pip install vobject`, or download the archive and
-untar, run `python setup.py install`. Tests can be run via `python 
-setup.py test`. 
+untar, run `python setup.py install`. Tests can be run via `python
+setup.py test`.
 _dateutil 2.4.0_ and _six_ are required.
 Python 2.7 or higher is now required.
 
@@ -145,7 +170,7 @@ vobject 0.8.2 released
 --
 28 January 2016
 
-To install, use `pip install vobject`, or download the archive and 
+To install, use `pip install vobject`, or download the archive and
 untar, run `python setup.py install`. Tests can be run via `python
 setup.py test`.
 _dateutil 1.1_ or later is required.
@@ -159,8 +184,8 @@ vobject 0.8.1c released (SVN revision 217)
 --
 27 February 2009
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. Tests can be run via `python setup.py test`. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 or later is required.
 
@@ -170,12 +195,12 @@ vobject 0.8.1b released (SVN revision 216)
 --
 12 January 2009
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. Tests can be run via `python setup.py test`. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
-* Change behavior when import a VCALENDAR or VCARD with an older or 
+* Change behavior when import a VCALENDAR or VCARD with an older or
   absent VERSION line, now the most recent behavior (i.e., VCARD 3.0
   and iCalendar, VCALENDAR 2.0) is used
 
@@ -183,22 +208,22 @@ vobject 0.8.0 released (SVN revision 213)
 --
 29 December 2008
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
-* Changed license to Apache 2.0 from Apache 1.1 
+* Changed license to Apache 2.0 from Apache 1.1
 * Fixed a major performance bug in backslash decoding large text bodies
 * Added workaround for strange Apple Address Book parsing of vcard PHOTO,
-  don't wrap PHOTO by default. To disable this behavior, set 
+  don't wrap PHOTO by default. To disable this behavior, set
   `vobject.vcard.wacky_apple_photo_serialize` to `False`.
 
 vobject 0.7.1 released (SVN revision 208)
 --
 25 July 2008
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`. Tests can be run via `python setup.py test`.
 `_dateutil 1.1_` or later is required. Python 2.4 is also required.
 
@@ -208,26 +233,26 @@ vobject 0.7.0 released (SVN revision 206)
 --
 16 July 2008
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
 * Allow Outlook's technically illegal use of commas in TZIDs
-* Added introspection help for IPython so tab completion works with 
+* Added introspection help for IPython so tab completion works with
   vobject's custom __getattr__
 * Made vobjects pickle-able
 * Added tolerance for the escaped semi-colons in RRULEs a Ruby iCalendar
   library generates
-* Fixed Bug 12245, setting an rrule from a dateutil instance missed 
+* Fixed Bug 12245, setting an rrule from a dateutil instance missed
   BYMONTHDAY when the number used is negative
 
 vobject 0.6.6 released (SVN revision 201)
 --
 30 May 2008
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. Tests can be run via `python setup.py test`. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
@@ -237,13 +262,13 @@ vobject 0.6.5 released (SVN revision 200)
 --
 28 May 2008
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. Tests can be run via `python setup.py test`. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`. Tests can be run via `python setup.py test`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
 * Fixed bug 9814, quoted-printable data wasn't being decoded into unicode,
-  thanks to Ilpo NyyssÃ¶nen for the fix. 
+  thanks to Ilpo NyyssÃ¶nen for the fix.
 * Fixed bug 12008, silently translate buggy Lotus Notes names with
   underscores into dashes.
 
@@ -274,8 +299,8 @@ vobject 0.4.9 released (SVN revision 187)
 --
 19 November 2007
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
@@ -300,14 +325,14 @@ vobject 0.4.7 released (SVN revision 172), hot on the heals of yesterday's 0.4.6
 --
 21 December 2006
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
-* Fixed a problem causing DATE valued RDATEs and EXDATEs to be ignored 
+* Fixed a problem causing DATE valued RDATEs and EXDATEs to be ignored
   when interpreting recurrence rules
-* And, from the short lived vobject 0.4.6, added an `ics_diff` module 
+* And, from the short lived vobject 0.4.6, added an `ics_diff` module
   and an `ics_diff` command line script for comparing similar iCalendar
   files
 
@@ -315,12 +340,12 @@ vobject 0.4.6 released (SVN revision 171)
 --
 20 December 2006
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
-* Added an ics_diff module and an ics_diff command line script for 
+* Added an ics_diff module and an ics_diff command line script for
   comparing similar iCalendar files
 
 vobject 0.4.5 released (SVN revision 168)
@@ -328,7 +353,7 @@ vobject 0.4.5 released (SVN revision 168)
 8 December 2006
 
 To install, use _easy_install_, or download the archive and untar, run
-`python setup.py install`. 
+`python setup.py install`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
@@ -343,7 +368,7 @@ vobject 0.4.4 released (SVN revision 159)
 --
 9 October 2006
 
-To install, use _easy_install_, or download the archive and untar, run 
+To install, use _easy_install_, or download the archive and untar, run
 `python setup.py install`.
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
@@ -368,9 +393,9 @@ vobject 0.4.2 released (SVN revision 153)
 --
 29 August 2006
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. 
-_dateutil 0.9_ or later is required. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`.
+_dateutil 0.9_ or later is required.
 Python 2.4 is also required.
 
 * Updated `ez_setup.py` to use the latest _setuptools_.
@@ -379,14 +404,14 @@ vobject 0.4.1 released (SVN revision 152)
 --
 4 August 2006
 
-To install, use _easy_install_, or download the archive and untar, run 
-`python setup.py install`. 
-_dateutil 0.9_ or later is required. 
+To install, use _easy_install_, or download the archive and untar, run
+`python setup.py install`.
+_dateutil 0.9_ or later is required.
 Python 2.4 is also required.
 
-* When vobject encounters ASCII, it now tries UTF-8, then UTF-16 with 
+* When vobject encounters ASCII, it now tries UTF-8, then UTF-16 with
   either LE or BE byte orders, searching for BEGIN in the decoded string
-  to determine if it's found an encoding match. `readOne` and 
+  to determine if it's found an encoding match. `readOne` and
   `readComponents` will no longer work on arbitrary Versit style ASCII
   streams unless the optional `findBegin` flag is set to `False`
 
@@ -395,8 +420,8 @@ vobject 0.4.0 released (SVN revision 151)
 2 August 2006
 
 To install, use _easy_install_, or download the archive and untar, run
-`python setup.py install`. 
-_dateutil 0.9_ or later is required. 
+`python setup.py install`.
+_dateutil 0.9_ or later is required.
 Python 2.4 is also required.
 
 * Workarounds for common invalid files produced by Apple's iCal and AddressBook
@@ -408,11 +433,11 @@ vobject 0.3.0 released (SVN revision 129)
 --
 17 February 2006
 
-To install, untar the archive, run `python setup.py install`. 
-_dateutil 0.9_ or later is required. 
+To install, untar the archive, run `python setup.py install`.
+_dateutil 0.9_ or later is required.
 Python 2.4 is also required.
 
-* Changed API for accessing children and parameters, attributes now 
+* Changed API for accessing children and parameters, attributes now
   return the first child or parameter, not a list. See usage for examples
 * Added support for groups, a vcard feature
 * Added behavior for FREEBUSY lines
@@ -424,10 +449,10 @@ vobject 0.2.3 released (SVN revision 104)
 --
 9 January 2006
 
-To install, untar the archive, run `python setup.py install`. 
-_dateutil 0.9_ or later is required. 
+To install, untar the archive, run `python setup.py install`.
+_dateutil 0.9_ or later is required.
 Python 2.4 is also required.
-* 
+*
 * Added VERSION line back into native iCalendar objects
 * Added a first stab at a vcard module, parsing of vCard 3.0 files now
   gives structured values for N and ADR properties
@@ -477,7 +502,7 @@ vobject 0.1.3 released (SVN revision 88)
 To install, untar the archive, run `python setup.py install`.
 _dateutil 0.9_ or later is required.
 
-* As of this release, Python 2.4 is required. 
+* As of this release, Python 2.4 is required.
 * Added license and acknowledgements.
 * Fixed the fact that defaultSerialize wasn't escaping linefeeds
 * Updated backslashEscape to encode CRLF's and bare CR's as linefeeds,
@@ -519,13 +544,13 @@ vobject 0.1 released (SVN revision 70)
 --
 13 December 2004
 
-* Parsing all iCalendar files should be working, please file a bug if 
+* Parsing all iCalendar files should be working, please file a bug if
   you can't read one!
-* Timezones can be set for datetimes, but currently they'll be converted 
-  to UTC for serializing, because VTIMEZONE serialization isn't yet 
+* Timezones can be set for datetimes, but currently they'll be converted
+  to UTC for serializing, because VTIMEZONE serialization isn't yet
   working.
-* RRULEs can be parsed, but when they're serialized, they'll be 
-  converted to a maximum of 500 RDATEs, because RRULE serialization 
+* RRULEs can be parsed, but when they're serialized, they'll be
+  converted to a maximum of 500 RDATEs, because RRULE serialization
   isn't yet working.
 * To parse unicode, see issue 4.
 * Much more testing is needed, of course!
