@@ -8,11 +8,12 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import datetime
+
 import vobject
 
-project = 'Python vObject'
-copyright = f'© {datetime.datetime.now().year}, David Arnold'
-author = 'David Arnold'
+project = "Python vObject"
+copyright = f"© {datetime.datetime.now().year}, David Arnold"
+author = "David Arnold"
 release = vobject.VERSION
 
 # -- General configuration ---------------------------------------------------
@@ -20,22 +21,21 @@ release = vobject.VERSION
 
 extensions = []
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = []
-
 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 html_theme_options = {
-    'github_user': 'py-vobject',
-    'github_repo': 'vobject',
-    'github_type': 'star',
-    'github_button': 'true',
-    'github_count': 'true',
+    "github_user": "py-vobject",
+    "github_repo": "vobject",
+    "github_type": "star",
+    "github_button": "true",
+    "github_count": "true",
 }
 
-html_static_path = ['_static']
+html_static_path = ["_static"]
