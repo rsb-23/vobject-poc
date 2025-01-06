@@ -9,6 +9,7 @@ import logging
 import random  # for generating a UID
 import socket
 import string
+from functools import partial
 
 from dateutil import rrule, tz
 
@@ -547,7 +548,7 @@ class RecurringComponent(Component):
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
                         added = False
-
+        print("unused variables", added)  # TODO: remove if not required
         return rruleset
 
     def setrruleset(self, rruleset):
@@ -566,12 +567,12 @@ class RecurringComponent(Component):
             untilSerialize = dateToString
         else:
             # make sure to convert time zones to UTC
-            untilSerialize = lambda x: dateTimeToString(x, True)
+            untilSerialize = partial(dateTimeToString, convertToUTC=True)
 
         for name in DATESANDRULES:
             if name in self.contents:
                 del self.contents[name]
-            setlist = getattr(rruleset, "_" + name)
+            setlist = getattr(rruleset, f"_{name}")
             if name in DATENAMES:
                 setlist = list(setlist)  # make a copy of the list
                 if name == "rdate" and dtstart in setlist:
@@ -994,7 +995,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                     table[obj.tzid_param] = 1
                 else:
                     if type(obj.value) == list:
-                        for item in obj.value:
+                        for _ in obj.value:
                             tzinfo = getattr(obj.value, "tzinfo", None)
                             tzid = TimezoneComponent.registerTzinfo(tzinfo)
                             if tzid:
@@ -1036,7 +1037,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
         else:
             transformed = obj
             undoTransform = False
-        out = None
+
         outbuf = buf or io.StringIO()
         if obj.group is None:
             groupString = ""
@@ -1080,6 +1081,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
         out = buf or outbuf.getvalue()
         if undoTransform:
             obj.transformToNative()
+        print("unused variables", transformed)  # TODO: remove if not required
         return out
 
 
@@ -1566,7 +1568,7 @@ class Trigger(behavior.Behavior):
                     obj.isNative = False
                     dt = DateTimeBehavior.transformToNative(obj)
                     return dt
-                except:
+                except (ParseError, ValueError):
                     msg = "TRIGGER with no VALUE not recognized as DURATION " "or as DATE-TIME"
                     raise ParseError(msg)
         elif value == "DATE-TIME":
@@ -1824,9 +1826,9 @@ def stringToDateTime(s, tzinfo=None, strict=False):
         second = int(s[13:15])
         if len(s) > 15 and s[15] == "Z":
             tzinfo = getTzid("UTC")
-    except:
+    except TypeError:
         raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s))
-    year = year if year else 2000
+    year = year or 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # Cater for pytz tzinfo instanes
         return tzinfo.localize(datetime.datetime(year, month, day, hour, minute, second))
     return datetime.datetime(year, month, day, hour, minute, second, 0, tzinfo)
@@ -1863,7 +1865,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
     while True:
         try:
             charIndex, char = next(charIterator)
-        except:
+        except StopIteration:
             char = "eof"
 
         if state == "read normal":
@@ -1945,7 +1947,7 @@ def stringToDurations(s, strict=False):
     while True:
         try:
             charIndex, char = next(charIterator)
-        except:
+        except StopIteration:
             char = "eof"
 
         if state == "start":
@@ -2038,7 +2040,7 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
     elif valueParam == "DATE-TIME":
         try:
             return stringToDateTime(contentline.value, tzinfo)
-        except:
+        except (ParseError, ValueError):
             if allowSignatureMismatch:
                 return stringToDate(contentline.value)
             else:
@@ -2051,9 +2053,9 @@ def stringToPeriod(s, tzinfo=None):
     valEnd = values[1]
     if isDuration(valEnd):  # period-start = date-time "/" dur-value
         delta = stringToDurations(valEnd)[0]
-        return (start, delta)
+        return start, delta
     else:
-        return (start, stringToDateTime(valEnd, tzinfo))
+        return start, stringToDateTime(valEnd, tzinfo)
 
 
 def includes_dst_offset(tz_info: datetime.tzinfo, dt: datetime.datetime) -> bool:

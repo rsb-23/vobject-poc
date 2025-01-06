@@ -12,41 +12,16 @@ import sys
 # Package version
 VERSION = "1.0.0"
 
-
-# ------------------------------------ Python 2/3 compatibility challenges  ----
-# Python 3 no longer has a basestring type, so....
-try:
-    basestring = basestring
-except NameError:
-    basestring = (str, bytes)
-
-# One more problem ... in python2 the str operator breaks on unicode
-# objects containing non-ascii characters
-try:
-    unicode
-
-    def str_(s):
-        """
-        Return byte string with correct encoding
-        """
-        if type(s) == unicode:
-            return s.encode("utf-8")
-        else:
-            return str(s)
-
-except NameError:
-
-    def str_(s):
-        """
-        Return string
-        """
-        return s
+# Removed python 2 compatibility code : flake8 fixes
+basestring = (str, bytes)
+unicode_type = str
 
 
-if not isinstance(b"", type("")):
-    unicode_type = str
-else:
-    unicode_type = unicode  # noqa
+def str_(s):
+    """
+    Return string
+    """
+    return s
 
 
 def to_unicode(value):
@@ -441,7 +416,7 @@ class ContentLine(VBase):
     def __str__(self):
         try:
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
-        except UnicodeEncodeError as e:
+        except UnicodeEncodeError:
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr().encode("utf-8"))
 
     def __repr__(self):
@@ -606,8 +581,8 @@ class Component(VBase):
         else:
             name = objOrName.upper()
             try:
-                id = self.behavior.knownChildren[name][2]
-                behavior = getBehavior(name, id)
+                _id = self.behavior.knownChildren[name][2]
+                behavior = getBehavior(name, _id)
                 if behavior.isComponent:
                     obj = Component(name)
                 else:
@@ -817,9 +792,9 @@ def parseParams(string):
     """
     Parse parameters
     """
-    all = params_re.findall(string)
+    all_ = params_re.findall(string)
     allParameters = []
-    for tup in all:
+    for tup in all_:
         paramList = [tup[0]]  # tup looks like (name, valuesString)
         for pair in param_values_re.findall(tup[1]):
             # pair looks like ('', value) or (value, '')

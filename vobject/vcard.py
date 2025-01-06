@@ -46,7 +46,7 @@ class Name(object):
                 and self.prefix == other.prefix
                 and self.suffix == other.suffix
             )
-        except:
+        except AttributeError:
             return False
 
 
@@ -97,7 +97,7 @@ class Address(object):
                 and self.code == other.code
                 and self.country == other.country
             )
-        except:
+        except AttributeError:
             return False
 
 

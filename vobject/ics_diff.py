@@ -200,7 +200,7 @@ def main():
 
 
 def getOptions():
-    ##### Configuration options #####
+    # Configuration options #
 
     usage = "usage: %prog [options] ics_file1 ics_file2"
     parser = OptionParser(usage=usage, version=vobject.VERSION)

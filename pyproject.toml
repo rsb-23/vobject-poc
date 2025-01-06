@@ -85,7 +85,7 @@ skip-magic-trailing-comma = true
 
 [tool.flake8]
 max-line-length = 120
-ignore = ["E203", "E501", "W503", "E721", "E722"]
+ignore = ["E203", "E501", "W503", "E721"]
 exclude = [".git", "__pycache__", ".venv", "venv"]
 per-file-ignores = ["*/__init__.py: F401"]
 
