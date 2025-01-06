@@ -57,7 +57,6 @@ FREQUENCIES = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SE
 ZERO_DELTA = datetime.timedelta(0)
 twoHours = datetime.timedelta(hours=2)
 
-
 # ---------------------------- TZID registry -----------------------------------
 __tzidMap = {}
 
@@ -449,9 +448,9 @@ class RecurringComponent(Component):
                         return None
 
                 if name in DATENAMES:
-                    if type(line.value[0]) == datetime.datetime:
+                    if type(line.value[0]) is datetime.datetime:
                         list(map(addfunc, line.value))
-                    elif type(line.value[0]) == datetime.date:
+                    elif type(line.value[0]) is datetime.date:
                         for dt in line.value:
                             addfunc(datetime.datetime(dt.year, dt.month, dt.day))
                     else:
@@ -519,7 +518,8 @@ class RecurringComponent(Component):
                     # add the rrule or exrule to the rruleset
                     addfunc(rule)
 
-                if (name == "rrule" or name == "rdate") and addRDate:
+                added = False
+                if name in ["rrule", "rdate"] and addRDate:
                     # rlist = rruleset._rrule if name == 'rrule' else rruleset._rdate
                     try:
                         # dateutils does not work with all-day
@@ -548,7 +548,7 @@ class RecurringComponent(Component):
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
                         added = False
-        print("unused variables", added)  # TODO: remove if not required
+                print("unused variables", added)  # TODO: remove if not required
         return rruleset
 
     def setrruleset(self, rruleset):
@@ -850,7 +850,7 @@ class DateOrDateTimeBehavior(behavior.Behavior):
         """
         Replace the date or datetime in obj.value with an ISO 8601 string.
         """
-        if type(obj.value) == datetime.date:
+        if type(obj.value) is datetime.date:
             obj.isNative = False
             obj.value_param = "DATE"
             obj.value = dateToString(obj.value)
@@ -896,7 +896,7 @@ class MultiDateBehavior(behavior.Behavior):
         Replace the date, datetime or period tuples in obj.value with
         appropriate strings.
         """
-        if obj.value and type(obj.value[0]) == datetime.date:
+        if obj.value and type(obj.value[0]) is datetime.date:
             obj.isNative = False
             obj.value_param = "DATE"
             obj.value = ",".join([dateToString(val) for val in obj.value])
@@ -908,7 +908,7 @@ class MultiDateBehavior(behavior.Behavior):
                 transformed = []
                 tzid = None
                 for val in obj.value:
-                    if tzid is None and type(val) == datetime.datetime:
+                    if tzid is None and type(val) is datetime.datetime:
                         tzid = TimezoneComponent.registerTzinfo(val.tzinfo)
                         if tzid is not None:
                             obj.tzid_param = tzid
@@ -994,7 +994,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                 if getattr(obj, "tzid_param", None):
                     table[obj.tzid_param] = 1
                 else:
-                    if type(obj.value) == list:
+                    if type(obj.value) is list:
                         for _ in obj.value:
                             tzinfo = getattr(obj.value, "tzinfo", None)
                             tzid = TimezoneComponent.registerTzinfo(tzinfo)
@@ -1580,10 +1580,10 @@ class Trigger(behavior.Behavior):
 
     @staticmethod
     def transformFromNative(obj):
-        if type(obj.value) == datetime.datetime:
+        if type(obj.value) is datetime.datetime:
             obj.value_param = "DATE-TIME"
             return UTCDateTimeBehavior.transformFromNative(obj)
-        elif type(obj.value) == datetime.timedelta:
+        elif type(obj.value) is datetime.timedelta:
             return Duration.transformFromNative(obj)
         else:
             raise NativeError("Native TRIGGER values must be timedelta or " "datetime")
@@ -1656,7 +1656,6 @@ class RRule(behavior.Behavior):
 registerBehavior(RRule, "RRULE")
 registerBehavior(RRule, "EXRULE")
 
-
 # ------------------------ Registration of common classes ----------------------
 utcDateTimeList = ["LAST-MODIFIED", "CREATED", "COMPLETED", "DTSTAMP"]
 list(map(lambda x: registerBehavior(UTCDateTimeBehavior, x), utcDateTimeList))
@@ -1666,7 +1665,6 @@ list(map(lambda x: registerBehavior(DateOrDateTimeBehavior, x), dateTimeOrDateLi
 
 registerBehavior(MultiDateBehavior, "RDATE")
 registerBehavior(MultiDateBehavior, "EXDATE")
-
 
 textList = [
     "CALSCALE",

@@ -376,12 +376,12 @@ class ContentLine(VBase):
         which are legal in IANA tokens.
         """
         if name.endswith("_param"):
-            if type(value) == list:
+            if type(value) is list:
                 self.params[toVName(name, 6, True)] = value
             else:
                 self.params[toVName(name, 6, True)] = [value]
         elif name.endswith("_paramlist"):
-            if type(value) == list:
+            if type(value) is list:
                 self.params[toVName(name, 10, True)] = value
             else:
                 raise VObjectError("Parameter list set to a non-list")
@@ -527,7 +527,7 @@ class Component(VBase):
         which are legal in IANA tokens.
         """
         if name not in self.normal_attributes and name.lower() == name:
-            if type(value) == list:
+            if type(value) is list:
                 if name.endswith("_list"):
                     name = name[:-5]
                 self.contents[toVName(name)] = value
