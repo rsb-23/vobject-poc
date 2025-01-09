@@ -5,7 +5,6 @@ import pytest
 import vobject
 
 ics_text = (
-    ""
     "BEGIN:VCALENDAR\r\n"
     "BEGIN:VEVENT\r\n"
     "SUMMARY;blah=hi!:Bastille Day Party\r\n"

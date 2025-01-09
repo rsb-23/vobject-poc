@@ -80,7 +80,7 @@ include = [
 ]
 
 [tool.black]
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py39", "py310", "py311", "py312", "py313"]
 line-length = 120
 skip-magic-trailing-comma = true
 

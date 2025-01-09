@@ -9,7 +9,8 @@ silly_test_text = (
     "profile:sillyprofile\r\n"
     "stuff:folded\r\n"
     " line\r\n"
-    "morestuff;asinine:this line is not folded, but in practice probably ought to be, as it is exceptionally long, and moreover demonstratively stupid\r\n"
+    "morestuff;asinine:this line is not folded, but in practice probably ought to be, as it is exceptionally long, "
+    "and moreover demonstratively stupid\r\n"
 )
 
 standard_test_text = (
@@ -96,7 +97,8 @@ quoted_printable = (
     "TEL;CELL:15810139237\r\n"
     "TEL;WORK:01088520374\r\n"
     "ADR;HOME;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:;;;=E5=8C=97=E4=BA=AC=20=E4=B8=B0=E5=8F=B0=E5=8C=BA;;;\r\n"
-    "URL;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=68=74=74=70=3A=2F=2F=77=65=69=62=6F=2E=63=6F=6D=2F=33=30=39=34=39=30=\r\n"
+    "URL;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:=68=74=74=70=3A=2F=2F=77=65=69=62=6F=2E=63=6F=6D=2F=33=30=39=34=39=30="
+    "\r\n"
     "=30=34=33=33=3F=E9=97=AA=E9=97=AA=48=E7=BA=A2=E6=98=9F\r\n"
     "END:VCARD\r\n"
 )
@@ -110,7 +112,8 @@ def test_readOne():
     silly = vobject.base.readOne(cal)
     assert (
         str(silly)
-        == "<SILLYPROFILE| [<MORESTUFF{}this line is not folded, but in practice probably ought to be, as it is exceptionally long, and moreover demonstratively stupid>, <SILLYNAME{}name>, <STUFF{}foldedline>]>"
+        == "<SILLYPROFILE| [<MORESTUFF{}this line is not folded, but in practice probably ought to be, as it is "
+        "exceptionally long, and moreover demonstratively stupid>, <SILLYNAME{}name>, <STUFF{}foldedline>]>"
     )
     assert str(silly.stuff) == "<STUFF{}foldedline>"
 

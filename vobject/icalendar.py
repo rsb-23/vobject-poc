@@ -21,12 +21,10 @@ except ImportError:
         """fake pytz module (pytz is not required)"""
 
         class AmbiguousTimeError(Exception):
-            """pytz error for ambiguous times
-            during transition daylight->standard"""
+            """pytz error for ambiguous times during transition daylight->standard"""
 
         class NonExistentTimeError(Exception):
-            """pytz error for non-existent times
-            during transition standard->daylight"""
+            """pytz error for non-existent times during transition standard->daylight"""
 
     pytz = Pytz  # keeps quantifiedcode happy
 
@@ -1569,7 +1567,7 @@ class Trigger(behavior.Behavior):
                     dt = DateTimeBehavior.transformToNative(obj)
                     return dt
                 except (ParseError, ValueError):
-                    msg = "TRIGGER with no VALUE not recognized as DURATION " "or as DATE-TIME"
+                    msg = "TRIGGER with no VALUE not recognized as DURATION or as DATE-TIME"
                     raise ParseError(msg)
         elif value == "DATE-TIME":
             # TRIGGERs with DATE-TIME values must be in UTC, we could validate
@@ -1586,7 +1584,7 @@ class Trigger(behavior.Behavior):
         elif type(obj.value) is datetime.timedelta:
             return Duration.transformFromNative(obj)
         else:
-            raise NativeError("Native TRIGGER values must be timedelta or " "datetime")
+            raise NativeError("Native TRIGGER values must be timedelta or datetime")
 
 
 registerBehavior(Trigger)

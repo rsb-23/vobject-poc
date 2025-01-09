@@ -495,7 +495,7 @@ class Component(VBase):
         if self.name or self.useBegin:
             if self.name == name:
                 return
-            raise VObjectError("This component already has a PROFILE or " "uses BEGIN.")
+            raise VObjectError("This component already has a PROFILE or uses BEGIN.")
         self.name = name.upper()
 
     def __getattr__(self, name):
