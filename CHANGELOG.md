@@ -304,11 +304,11 @@ To install, use _easy_install_, or download the archive and untar, run
 _dateutil 1.1_ or later is required.
 Python 2.4 is also required.
 
-  * Tolerate invalid UNTIL values for recurring events
-  * Minor improvements to logging and tracebacks
-  * Fix serialization of zero-delta durations
-  * Treat different tzinfo classes that represent UTC as equal
-  * Added ORG behavior to vCard handling, native value for ORG is now a list.
+* Tolerate invalid UNTIL values for recurring events
+* Minor improvements to logging and tracebacks
+* Fix serialization of zero-delta durations
+* Treat different tzinfo classes that represent UTC as equal
+* Added ORG behavior to vCard handling, native value for ORG is now a list.
 
 vobject 0.4.8 released (SVN revision 180)
 --
@@ -452,6 +452,7 @@ vobject 0.2.3 released (SVN revision 104)
 To install, untar the archive, run `python setup.py install`.
 _dateutil 0.9_ or later is required.
 Python 2.4 is also required.
+
 *
 * Added VERSION line back into native iCalendar objects
 * Added a first stab at a vcard module, parsing of vCard 3.0 files now
@@ -518,8 +519,7 @@ _dateutil_ is required.
 * You'll need to apply this patch to be able to read certain VTIMEZONEs
   exported by Apple iCal, or if you happen to be in Europe!
 
-
-    patch -R $PYTHONLIB/site-packages/dateutil/tz.py dateutil-0.5-tzoffset-bug.patch
+  patch -R $PYTHONLIB/site-packages/dateutil/tz.py dateutil-0.5-tzoffset-bug.patch
 
 * Fixed printing of non-ascii unicode.
 * Fixed bug preventing content lines with empty contents from parsing.
@@ -534,8 +534,7 @@ To install, untar the archive, run `python setup.py install`.
 * You'll need to apply this patch to be able to read certain VTIMEZONEs
   exported by Apple iCal, or if you happen to be in Europe!
 
-
-    patch -R $PYTHONLIB/site-packages/dateutil/tz.py dateutil-0.5-tzoffset-bug.patch
+  patch -R $PYTHONLIB/site-packages/dateutil/tz.py dateutil-0.5-tzoffset-bug.patch
 
 * Various bug fixes involving recurrence.
 * TRIGGER and VALARM behaviors set up.
