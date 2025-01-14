@@ -284,9 +284,10 @@ class TimezoneComponent(Component):
             if working[transitionTo] is not None:
                 completed[transitionTo].append(working[transitionTo])
 
-        self.tzid = []
-        self.daylight = []
-        self.standard = []
+        # FIXME: pylint warning attribute-defined-outside-init
+        self.tzid = []  # pylint:disable=w0201
+        self.daylight = []  # pylint:disable=w0201
+        self.standard = []  # pylint:disable=w0201
 
         self.add("tzid").value = self.pickTzid(tzinfo, True)
 
@@ -1009,7 +1010,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
 
         findTzids(obj, tzidsUsed)
         oldtzids = [toUnicode(x.tzid.value) for x in getattr(obj, "vtimezone_list", [])]
-        for tzid in tzidsUsed.keys():
+        for tzid in tzidsUsed:
             tzid = toUnicode(tzid)
             if tzid != "UTC" and tzid not in oldtzids:
                 obj.add(TimezoneComponent(tzinfo=getTzid(tzid)))
@@ -1860,7 +1861,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
+            _, char = next(charIterator)
         except StopIteration:
             char = "eof"
 
@@ -1891,7 +1892,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
                 current.append("\\" + char)
 
         elif state == "end":  # an end state
-            if len(current) or len(results) == 0:
+            if current or not results:
                 current = "".join(current)
                 results.append(current)
             return results
@@ -1942,7 +1943,7 @@ def stringToDurations(s, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
+            _, char = next(charIterator)
         except StopIteration:
             char = "eof"
 
@@ -2037,10 +2038,10 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
         try:
             return stringToDateTime(contentline.value, tzinfo)
         except (ParseError, ValueError):
-            if allowSignatureMismatch:
-                return stringToDate(contentline.value)
-            else:
+            if not allowSignatureMismatch:
                 raise
+            return stringToDate(contentline.value)
+    return None
 
 
 def stringToPeriod(s, tzinfo=None):
@@ -2116,14 +2117,14 @@ def getTransition(transitionTo, year, tzinfo):
         """
         months = range(1, 13)
         days = range(1, 32)
-        hours = range(0, 24)
+        hours = range(24)
         if month is None:
-            for month in months:
-                yield datetime.datetime(year, month, 1)
+            for _month in months:
+                yield datetime.datetime(year, _month, 1)
         elif day is None:
-            for day in days:
+            for _day in days:
                 try:
-                    yield datetime.datetime(year, month, day)
+                    yield datetime.datetime(year, month, _day)
                 except ValueError:
                     pass
         else:

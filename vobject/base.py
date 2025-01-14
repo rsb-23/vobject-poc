@@ -610,8 +610,7 @@ class Component(VBase):
         Return an iterable of all children.
         """
         for objList in self.contents.values():
-            for obj in objList:
-                yield obj
+            yield from objList
 
     def components(self):
         """
@@ -630,7 +629,7 @@ class Component(VBase):
             first = [s for s in self.behavior.sortFirst if s in self.contents]
         except Exception:
             first = []
-        return first + sorted(k for k in self.contents.keys() if k not in first)
+        return first + sorted(k for k in self.contents if k not in first)
 
     def getSortedChildren(self):
         return [obj for k in self.sortChildKeys() for obj in self.contents[k]]
@@ -697,7 +696,9 @@ class VObjectError(Exception):
 
 
 class ParseError(VObjectError):
-    pass
+    def __init__(self, msg, line_number=None, *, inputs=None):
+        super().__init__(msg, line_number)
+        self.inputs = inputs
 
 
 class ValidateError(VObjectError):
@@ -890,9 +891,8 @@ def getLogicalLines(fp, allowQP=True):
             line = fp.readline()
             if line == "":
                 break
-            else:
-                line = line.rstrip(CRLF)
-                lineNumber += 1
+            line = line.rstrip(CRLF)
+            lineNumber += 1
             if line.rstrip() == "":
                 if logicalLine.tell() > 0:
                     yield logicalLine.getvalue(), lineStartNumber
@@ -1143,7 +1143,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
             yield stack.pop()
 
     except ParseError as e:
-        e.input = streamOrString
+        e.inputs = streamOrString
         raise
 
 

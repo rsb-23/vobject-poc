@@ -78,9 +78,8 @@ def diff(left, right):
                     if rightIndex >= rightListSize:
                         output.append((comp, None))
                         break
-                    else:
-                        rightComp = rightList[rightIndex]
-                        rightKey = getSortKey(rightComp)
+                    rightComp = rightList[rightIndex]
+                    rightKey = getSortKey(rightComp)
 
                 if leftKey < rightKey:
                     output.append((comp, None))
@@ -92,7 +91,7 @@ def diff(left, right):
 
         return output
 
-    def newComponent(name, body):
+    def newComponent(name, body):  # pylint:disable=unused-variable
         if body is None:
             return None
         else:
