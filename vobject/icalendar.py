@@ -119,7 +119,7 @@ class TimezoneComponent(Component):
         """
         Accept an existing Component or a tzinfo class.
         """
-        super(TimezoneComponent, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.isNative = True
         # hack to make sure a behavior is assigned
         if self.behavior is None:
@@ -404,7 +404,7 @@ class RecurringComponent(Component):
     """
 
     def __init__(self, *args, **kwds):
-        super(RecurringComponent, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
 
         self.isNative = True
 
@@ -671,7 +671,7 @@ class RecurringComponent(Component):
         if name == "rruleset":
             self.setrruleset(value)
         else:
-            super(RecurringComponent, self).__setattr__(name, value)
+            super().__setattr__(name, value)
 
 
 class TextBehavior(behavior.Behavior):
@@ -1052,7 +1052,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
             first_components = [
                 s for s in cls.sortFirst if s in obj.contents and isinstance(obj.contents[s][0], Component)
             ]
-        except Exception:
+        except VObjectError:
             first_props = first_components = []
             # first_components = []
 
@@ -1849,8 +1849,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
     def error(msg):
         if strict:
             raise ParseError(msg)
-        else:
-            logging.error(msg)
+        logging.error(msg)
 
     # vars which control state machine
     charIterator = enumerate(s)
@@ -1925,8 +1924,7 @@ def stringToDurations(s, strict=False):
     def error(msg):
         if strict:
             raise ParseError(msg)
-        else:
-            raise ParseError(msg)
+        raise ParseError(msg)
 
     # vars which control state machine
     charIterator = enumerate(s)

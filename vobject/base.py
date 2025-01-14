@@ -69,7 +69,7 @@ SPACEORTAB = SPACE + TAB
 # --------------------------------- Main classes -------------------------------
 
 
-class VBase(object):
+class VBase:
     """
     Base class for ContentLine and Component.
 
@@ -88,7 +88,7 @@ class VBase(object):
     """
 
     def __init__(self, group=None, *args, **kwds):
-        super(VBase, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.name = None
         self.group = group
         self.behavior = None
@@ -176,11 +176,11 @@ class VBase(object):
                     if lineNumber is not None:
                         e.lineNumber = lineNumber
                     raise
-                else:
-                    msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    msg = msg + " (" + str(self_orig) + ")"
-                    raise ParseError(msg, lineNumber)
+
+                msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                msg = msg + " (" + str(self_orig) + ")"
+                raise ParseError(msg, lineNumber)
 
     def transformFromNative(self):
         """
@@ -205,10 +205,10 @@ class VBase(object):
                     if lineNumber is not None:
                         e.lineNumber = lineNumber
                     raise
-                else:
-                    msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    raise NativeError(msg, lineNumber)
+
+                msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                raise NativeError(msg, lineNumber)
         else:
             return self
 
@@ -282,7 +282,7 @@ class ContentLine(VBase):
 
         Group is used as a positional argument to match parseLine's return
         """
-        super(ContentLine, self).__init__(group, *args, **kwds)
+        super().__init__(group, *args, **kwds)
 
         self.name = name.upper()
         self.encoded = encoded
@@ -330,7 +330,7 @@ class ContentLine(VBase):
         return newcopy
 
     def copy(self, copyit):
-        super(ContentLine, self).copy(copyit)
+        super().copy(copyit)
         self.name = copyit.name
         self.value = copy.copy(copyit.value)
         self.encoded = self.encoded
@@ -343,7 +343,7 @@ class ContentLine(VBase):
     def __eq__(self, other):
         try:
             return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
-        except Exception:
+        except AttributeError:
             return False
 
     def __getattr__(self, name):
@@ -449,7 +449,7 @@ class Component(VBase):
     """
 
     def __init__(self, name=None, *args, **kwds):
-        super(Component, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.contents = {}
         if name:
             self.name = name.upper()
@@ -467,7 +467,7 @@ class Component(VBase):
         return newcopy
 
     def copy(self, copyit):
-        super(Component, self).copy(copyit)
+        super().copy(copyit)
 
         # deep copy of contents
         self.contents = {}
@@ -627,7 +627,7 @@ class Component(VBase):
     def sortChildKeys(self):
         try:
             first = [s for s in self.behavior.sortFirst if s in self.contents]
-        except Exception:
+        except AttributeError:
             first = []
         return first + sorted(k for k in self.contents if k not in first)
 
@@ -949,13 +949,18 @@ def foldOneLine(outbuf, input_, lineLength=75):
 
     TO-DO: This all seems odd. Is it still needed, especially in python3?
     """
+
+    def write_to_outbuf(text):
+        # TODO: remove py2
+        try:
+            outbuf.write(bytes(text, "UTF-8"))
+        except Exception:  # pylint: disable=broad-exception-caught
+            # fall back on py2 syntax
+            outbuf.write(text)
+
     if len(input_) < lineLength:
         # Optimize for unfolded line case
-        try:
-            outbuf.write(bytes(input_, "UTF-8"))
-        except Exception:
-            # fall back on py2 syntax
-            outbuf.write(input_)
+        write_to_outbuf(text=input_)
 
     else:
         # Look for valid utf8 range and write that out
@@ -968,12 +973,7 @@ def foldOneLine(outbuf, input_, lineLength=75):
             s = decoded[start]  # take one char
             size = len(to_basestring(s))  # calculate it's size in bytes
             if counter + size > lineLength:
-                try:
-                    outbuf.write(bytes("\r\n ", "UTF-8"))
-                except Exception:
-                    # fall back on py2 syntax
-                    outbuf.write("\r\n ")
-
+                write_to_outbuf(text="\r\n ")
                 counter = 1  # one for space
 
             if str is unicode_type:
@@ -985,11 +985,7 @@ def foldOneLine(outbuf, input_, lineLength=75):
             written += size
             counter += size
             start += 1
-    try:
-        outbuf.write(bytes("\r\n", "UTF-8"))
-    except Exception:
-        # fall back on py2 syntax
-        outbuf.write("\r\n")
+    write_to_outbuf(text="\r\n")
 
 
 def defaultSerialize(obj, buf, lineLength):

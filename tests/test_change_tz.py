@@ -5,9 +5,9 @@ import dateutil
 from vobject.change_tz import change_tz
 
 
-class StubCal(object):
-    class StubEvent(object):
-        class Node(object):
+class StubCal:
+    class StubEvent:
+        class Node:
             def __init__(self, value):
                 self.value = value
 

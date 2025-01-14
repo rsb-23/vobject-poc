@@ -19,7 +19,6 @@ max-statements = 95
 disable=
 	I,
 	# W
-	broad-exception-caught,
 	deprecated-module,
 	fixme,
 	keyword-arg-before-vararg,
@@ -37,8 +36,5 @@ disable=
 	unidiomatic-typecheck,
 	# R
 	duplicate-code,
-	no-else-raise,
 	no-else-return,
-	super-with-arguments,
 	too-few-public-methods,
-	useless-object-inheritance,
