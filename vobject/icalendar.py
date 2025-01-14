@@ -79,19 +79,19 @@ def getTzid(tzid, smart=True):
     """
     Return the tzid if it exists, or None.
     """
-    tz = __tzidMap.get(toUnicode(tzid))
-    if smart and tzid and not tz:
+    _tz = __tzidMap.get(toUnicode(tzid))
+    if smart and tzid and not _tz:
         try:
             from pytz import UnknownTimeZoneError, timezone
 
             try:
-                tz = timezone(tzid)
-                registerTzid(toUnicode(tzid), tz)
+                _tz = timezone(tzid)
+                registerTzid(toUnicode(tzid), _tz)
             except UnknownTimeZoneError as e:
                 logging.error("Unknown Timezone: %r", e.args[0])
         except ImportError as e:
             logging.error(e)
-    return tz
+    return _tz
 
 
 utc = tz.tzutc()
@@ -1015,7 +1015,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                 obj.add(TimezoneComponent(tzinfo=getTzid(tzid)))
 
     @classmethod
-    def serialize(cls, obj, buf, lineLength, validate=True):
+    def serialize(cls, obj, buf, lineLength, validate=True, *args, **kwargs):
         """
         Set implicit parameters, do encoding, return unicode string.
 
@@ -1622,8 +1622,8 @@ class PeriodBehavior(behavior.Behavior):
             transformed = []
             for tup in obj.value:
                 transformed.append(periodToString(tup, cls.forceUTC))
-            if len(transformed) > 0:
-                tzid = TimezoneComponent.registerTzinfo(tup[0].tzinfo)
+            if transformed:
+                tzid = TimezoneComponent.registerTzinfo(tup[0].tzinfo)  # pylint:disable=W0631
                 if not cls.forceUTC and tzid is not None:
                     obj.tzid_param = tzid
 

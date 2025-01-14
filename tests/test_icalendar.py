@@ -3,6 +3,7 @@ import io
 import re
 
 import dateutil
+import pytest
 
 import vobject
 
@@ -390,7 +391,7 @@ def test_pytz_timezone_serializing():
     try:
         import pytz
     except ImportError:
-        return self.skipTest("pytz not installed")  # NOQA
+        pytest.skip("pytz not installed")
 
     # Avoid conflicting cached tzinfo from other tests
     def unregister_tzid(tzid):
@@ -541,23 +542,22 @@ def test_includes_dst_offset():
     assert vobject.icalendar.includes_dst_offset(tz, dt)
 
     # Leaving DST: 2024-11-03 02:00:00 reverts to 01:00
-    pass
 
 
 def test_omits_dst_offset():
 
     # Check dateutil, pytz, and zoneinfo (3.9+) tzinfo instances
-    timezones = []
+    _timezones = []
     if "dateutil" in globals():
         tz = dateutil.tz.gettz("US/Eastern")
         assert tz is not None
-        timezones.append(tz)
+        _timezones.append(tz)
     if "zoneinfo" in globals():
         tz = zoneinfo.ZoneInfo("US/Eastern")
         assert tz is not None
-        timezones.append(tz)
+        _timezones.append(tz)
 
-    for tz in timezones:
+    for tz in _timezones:
         dt = datetime.datetime(2020, 1, 1)
         assert vobject.icalendar.omits_dst_offset(tz, dt)
 

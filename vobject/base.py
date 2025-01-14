@@ -89,6 +89,7 @@ class VBase(object):
 
     def __init__(self, group=None, *args, **kwds):
         super(VBase, self).__init__(*args, **kwds)
+        self.name = None
         self.group = group
         self.behavior = None
         self.parentBehavior = None
@@ -136,7 +137,7 @@ class VBase(object):
                 behavior = getBehavior(self.name, knownChildTup[2])
                 if behavior is not None:
                     self.setBehavior(behavior, cascade)
-                    if isinstance(self, ContentLine) and self.encoded:
+                    if isinstance(self, ContentLine) and self.encoded:  # pylint:disable=e1101
                         self.behavior.decode(self)
             elif isinstance(self, ContentLine):
                 self.behavior = parentBehavior.defaultBehavior
@@ -212,16 +213,10 @@ class VBase(object):
             return self
 
     def transformChildrenToNative(self):
-        """
-        Recursively replace children with their native representation.
-        """
-        pass
+        """Recursively replace children with their native representation."""
 
     def transformChildrenFromNative(self, clearBehavior=True):
-        """
-        Recursively transform native children to vanilla representations.
-        """
-        pass
+        """Recursively transform native children to vanilla representations."""
 
     def serialize(self, buf=None, lineLength=75, validate=True, behavior=None, *args, **kwargs):
         """
@@ -947,28 +942,28 @@ def dquoteEscape(param):
     return param
 
 
-def foldOneLine(outbuf, input, lineLength=75):
+def foldOneLine(outbuf, input_, lineLength=75):
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
     broken across lines
 
     TO-DO: This all seems odd. Is it still needed, especially in python3?
     """
-    if len(input) < lineLength:
+    if len(input_) < lineLength:
         # Optimize for unfolded line case
         try:
-            outbuf.write(bytes(input, "UTF-8"))
+            outbuf.write(bytes(input_, "UTF-8"))
         except Exception:
             # fall back on py2 syntax
-            outbuf.write(input)
+            outbuf.write(input_)
 
     else:
         # Look for valid utf8 range and write that out
         start = 0
         written = 0
         counter = 0  # counts line size in bytes
-        decoded = to_unicode(input)
-        length = len(to_basestring(input))
+        decoded = to_unicode(input_)
+        length = len(to_basestring(input_))
         while written < length:
             s = decoded[start]  # take one char
             size = len(to_basestring(s))  # calculate it's size in bytes
@@ -1163,7 +1158,7 @@ def readOne(stream, validate=False, transform=True, ignoreUnreadable=False, allo
 __behaviorRegistry = {}
 
 
-def registerBehavior(behavior, name=None, default=False, id=None):
+def registerBehavior(behavior, name=None, default=False, id_=None):
     """
     Register the given behavior.
 
@@ -1172,18 +1167,18 @@ def registerBehavior(behavior, name=None, default=False, id=None):
     """
     if not name:
         name = behavior.name.upper()
-    if id is None:
-        id = behavior.versionString
+    if id_ is None:
+        id_ = behavior.versionString
     if name in __behaviorRegistry:
         if default:
-            __behaviorRegistry[name].insert(0, (id, behavior))
+            __behaviorRegistry[name].insert(0, (id_, behavior))
         else:
-            __behaviorRegistry[name].append((id, behavior))
+            __behaviorRegistry[name].append((id_, behavior))
     else:
-        __behaviorRegistry[name] = [(id, behavior)]
+        __behaviorRegistry[name] = [(id_, behavior)]
 
 
-def getBehavior(name, id=None):
+def getBehavior(name, id_=None):
     """
     Return a matching behavior if it exists, or None.
 
@@ -1191,21 +1186,21 @@ def getBehavior(name, id=None):
     """
     name = name.upper()
     if name in __behaviorRegistry:
-        if id:
+        if id_:
             for n, behavior in __behaviorRegistry[name]:
-                if n == id:
+                if n == id_:
                     return behavior
 
         return __behaviorRegistry[name][0][1]
     return None
 
 
-def newFromBehavior(name, id=None):
+def newFromBehavior(name, id_=None):
     """
     Given a name, return a behaviored ContentLine or Component.
     """
     name = name.upper()
-    behavior = getBehavior(name, id)
+    behavior = getBehavior(name, id_)
     if behavior is None:
         raise VObjectError("No behavior found named {0!s}".format(name))
     if behavior.isComponent:

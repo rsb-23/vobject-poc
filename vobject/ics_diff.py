@@ -1,12 +1,10 @@
-from __future__ import print_function
+"""
+Compare VTODOs and VEVENTs in two iCalendar sources.
+"""
 
 from optparse import OptionParser
 
 import vobject
-
-"""
-Compare VTODOs and VEVENTs in two iCalendar sources.
-"""
 
 
 def getSortKey(component):
@@ -183,7 +181,6 @@ def prettyDiff(leftObj, rightObj):
         if right is not None:
             right.prettyPrint()
         print(">>>>>>>>>>>>>>>")
-        print
 
 
 def main():
@@ -217,8 +214,7 @@ def getOptions():
 
     (cmdline_options, args) = parser.parse_args()
     if len(args) < 2:
-        print("error: too few arguments given")
-        print
+        print("error: too few arguments given\n")
         print(parser.format_help())
         return False, False
 

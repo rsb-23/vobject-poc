@@ -18,26 +18,15 @@ max-statements = 95
 [MESSAGES CONTROL]
 disable=
 	I,
-	# E
-	no-member,
-	possibly-used-before-assignment,
-	undefined-variable,
 	# W
-	arguments-differ,
 	attribute-defined-outside-init,
 	broad-exception-caught,
 	deprecated-module,
 	fixme,
 	keyword-arg-before-vararg,
 	logging-format-interpolation,
-	pointless-statement,
-	pointless-string-statement,
 	protected-access,
 	raise-missing-from,
-	redefined-builtin,
-	redefined-outer-name,
-	undefined-loop-variable,
-	unnecessary-pass,
 	unspecified-encoding,
 	unused-argument,
 	unused-variable,

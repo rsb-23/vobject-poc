@@ -139,7 +139,6 @@ class Behavior(object):
     @classmethod
     def generateImplicitParameters(cls, obj):
         """Generate any required information that don't yet exist."""
-        pass
 
     @classmethod
     def serialize(cls, obj, buf, lineLength, validate=True, *args, **kwargs):
