@@ -1,0 +1,65 @@
+[MASTER]
+jobs=2
+
+[FORMAT]
+max-line-length = 130
+
+[REFACTORING]
+max-args = 8
+max-attributes = 9
+max-bool-expr = 6
+max-branches = 32
+max-locals = 31
+max-module-lines = 27989
+max-nested-blocks = 6
+max-positional-arguments = 8
+max-statements = 95
+
+[MESSAGES CONTROL]
+disable=
+	I,
+	# E
+	no-member,
+	possibly-used-before-assignment,
+	undefined-variable,
+	# W
+	arguments-differ,
+	attribute-defined-outside-init,
+	broad-exception-caught,
+	deprecated-module,
+	fixme,
+	keyword-arg-before-vararg,
+	logging-format-interpolation,
+	pointless-statement,
+	pointless-string-statement,
+	protected-access,
+	raise-missing-from,
+	redefined-builtin,
+	redefined-outer-name,
+	undefined-loop-variable,
+	unnecessary-pass,
+	unspecified-encoding,
+	unused-argument,
+	unused-variable,
+	# C
+	consider-iterating-dictionary,
+	consider-using-f-string,
+	import-outside-toplevel,
+	invalid-name,
+	line-too-long,
+	missing-docstring,
+	unidiomatic-typecheck,
+	use-implicit-booleaness-not-len,
+	# R
+	consider-using-with,
+	duplicate-code,
+	inconsistent-return-statements,
+	no-else-break,
+	no-else-raise,
+	no-else-return,
+	redefined-argument-from-local,
+	super-with-arguments,
+	too-few-public-methods,
+	use-yield-from,
+	useless-object-inheritance,
+	useless-return,
