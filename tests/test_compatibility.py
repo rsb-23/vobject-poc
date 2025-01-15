@@ -1,3 +1,4 @@
+# pylint: disable=c0301,c0302
 import vobject
 
 

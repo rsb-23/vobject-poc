@@ -24,13 +24,20 @@ def test_multi_date_behavior():
     """
     parse_r_date = vobject.icalendar.MultiDateBehavior.transformToNative
 
-    expected = "<RDATE{'VALUE': ['DATE']}[datetime.date(1997, 3, 4), datetime.date(1997, 5, 4), datetime.date(1997, 7, 4), datetime.date(1997, 9, 4)]>"
+    expected = (
+        "<RDATE{'VALUE': ['DATE']}[datetime.date(1997, 3, 4), datetime.date(1997, 5, 4), "
+        "datetime.date(1997, 7, 4), datetime.date(1997, 9, 4)]>"
+    )
     result = str(
         parse_r_date(vobject.base.textLineToContentLine("RDATE;VALUE=DATE:19970304,19970504,19970704,19970904"))
     )
     assert result == expected
 
-    expected = "<RDATE{'VALUE': ['PERIOD']}[(datetime.datetime(1996, 4, 3, 2, 0, tzinfo=tzutc()), datetime.datetime(1996, 4, 3, 4, 0, tzinfo=tzutc())), (datetime.datetime(1996, 4, 4, 1, 0, tzinfo=tzutc()), datetime.timedelta(seconds=10800))]>"
+    expected = (
+        "<RDATE{'VALUE': ['PERIOD']}[(datetime.datetime(1996, 4, 3, 2, 0, tzinfo=tzutc()), "
+        "datetime.datetime(1996, 4, 3, 4, 0, tzinfo=tzutc())), "
+        "(datetime.datetime(1996, 4, 4, 1, 0, tzinfo=tzutc()), datetime.timedelta(seconds=10800))]>"
+    )
     result = str(
         parse_r_date(
             vobject.base.textLineToContentLine(

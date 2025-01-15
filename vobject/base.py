@@ -1,7 +1,5 @@
 """vobject module for reading vCard and vCalendar files."""
 
-from __future__ import print_function
-
 import codecs
 import copy
 import io
@@ -18,22 +16,16 @@ unicode_type = str
 
 
 def str_(s):
-    """
-    Return string
-    """
     return s
 
 
 def to_unicode(value):
     """Converts a string argument to a unicode string.
 
-    If the argument is already a unicode string, it is returned
-    unchanged.  Otherwise it must be a byte string and is decoded as utf8.
+    If the argument is already a unicode string, it is returned unchanged.
+    Otherwise it must be a byte string and is decoded as utf8.
     """
-    if isinstance(value, unicode_type):
-        return value
-
-    return value.decode("utf-8")
+    return value if isinstance(value, unicode_type) else value.decode("utf-8")
 
 
 def to_basestring(s):
@@ -42,10 +34,7 @@ def to_basestring(s):
     If the argument is already a byte string, it is returned unchanged.
     Otherwise it must be a unicode string and is encoded as utf8.
     """
-    if isinstance(s, bytes):
-        return s
-
-    return s.encode("utf-8")
+    return s if isinstance(s, bytes) else s.encode("utf-8")
 
 
 # ------------------------------------ Logging ---------------------------------
@@ -102,23 +91,15 @@ class VBase:
         self.isNative = copyit.isNative
 
     def validate(self, *args, **kwds):
-        """
-        Call the behavior's validate method, or return True.
-        """
-        if self.behavior:
-            return self.behavior.validate(self, *args, **kwds)
-        return True
+        """Call the behavior's validate method, or return True."""
+        return self.behavior.validate(self, *args, **kwds) if self.behavior else True
 
     def getChildren(self):
-        """
-        Return an iterable containing the contents of the object.
-        """
+        """Return an iterable containing the contents of the object."""
         return []
 
     def clearBehavior(self, cascade=True):
-        """
-        Set behavior to None. Do for all descendants if cascading.
-        """
+        """Set behavior to None. Do for all descendants if cascading."""
         self.behavior = None
         if cascade:
             self.transformChildrenFromNative()
@@ -145,9 +126,7 @@ class VBase:
                     self.behavior.decode(self)
 
     def setBehavior(self, behavior, cascade=True):
-        """
-        Set behavior. If cascade is True, autoBehavior all descendants.
-        """
+        """Set behavior. If cascade is True, autoBehavior all descendants."""
         self.behavior = behavior
         if cascade:
             for obj in self.getChildren():
@@ -239,8 +218,7 @@ class VBase:
 
 def toVName(name, stripNum=0, upper=False):
     """
-    Turn a Python name into an iCalendar style name,
-    optionally uppercase and with characters stripped off.
+    Turn a Python name into an iCalendar style name, optionally uppercase and with characters stripped off.
     """
     if upper:
         name = name.upper()
@@ -371,10 +349,7 @@ class ContentLine(VBase):
         which are legal in IANA tokens.
         """
         if name.endswith("_param"):
-            if type(value) is list:
-                self.params[toVName(name, 6, True)] = value
-            else:
-                self.params[toVName(name, 6, True)] = [value]
+            self.params[toVName(name, 6, True)] = value if type(value) is list else [value]
         elif name.endswith("_paramlist"):
             if type(value) is list:
                 self.params[toVName(name, 10, True)] = value

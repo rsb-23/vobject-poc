@@ -10,7 +10,7 @@ max-attributes = 9
 max-bool-expr = 6
 max-branches = 32
 max-locals = 31
-max-module-lines = 27989
+max-module-lines = 1200
 max-nested-blocks = 6
 max-positional-arguments = 8
 max-statements = 95
@@ -31,7 +31,6 @@ disable=
 	consider-using-f-string,
 	import-outside-toplevel,
 	invalid-name,
-	line-too-long,
 	missing-docstring,
 	unidiomatic-typecheck,
 	# R

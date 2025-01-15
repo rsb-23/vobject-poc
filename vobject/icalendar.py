@@ -1,6 +1,5 @@
+# pylint: disable=c0302
 """Definitions and behavior for iCalendar, also known as vCalendar 2.0"""
-
-from __future__ import print_function
 
 import base64
 import datetime
