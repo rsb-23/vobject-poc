@@ -1,5 +1,6 @@
 [MASTER]
 jobs=2
+ignore-paths=(?!(vobject|tests))/*
 
 [FORMAT]
 max-line-length = 130
@@ -18,8 +19,8 @@ max-statements = 95
 [MESSAGES CONTROL]
 disable=
 	I,
+	import-error,
 	# W
-	deprecated-module,
 	fixme,
 	keyword-arg-before-vararg,
 	logging-format-interpolation,

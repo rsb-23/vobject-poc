@@ -2,7 +2,7 @@
 Compare VTODOs and VEVENTs in two iCalendar sources.
 """
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 import vobject
 
@@ -199,10 +199,9 @@ def getOptions():
     # Configuration options #
 
     usage = "usage: %prog [options] ics_file1 ics_file2"
-    parser = OptionParser(usage=usage, version=vobject.VERSION)
-    parser.set_description("ics_diff will print a comparison of two iCalendar files ")
-
-    parser.add_option(
+    parser = ArgumentParser(usage=usage, description="ics_diff will print a comparison of two iCalendar files")
+    parser.add_argument("--version", action="version", version=vobject.VERSION)
+    parser.add_argument(
         "-i",
         "--ignore-dtstamp",
         dest="ignore",
