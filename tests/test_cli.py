@@ -1,4 +1,5 @@
 import subprocess
+from typing import List
 
 
 class Cli:
@@ -6,7 +7,7 @@ class Cli:
     change_tz = "change_tz"
 
 
-def run_cli_tool(toolname: str, args: list[str]):
+def run_cli_tool(toolname: str, args: List[str]):
     return subprocess.run([toolname] + args, capture_output=True, text=True, check=False)
 
 
