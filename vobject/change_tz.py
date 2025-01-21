@@ -8,7 +8,7 @@ from dateutil import tz
 
 import vobject
 
-version = "0.1"
+version = vobject.VERSION
 
 
 def change_tz(cal, new_timezone, default, utc_only=False, utc_tz=vobject.icalendar.utc):
@@ -40,18 +40,16 @@ def show_timezones():
         print(tz_string)
 
 
-def convert_events(utc_only, args):
-    print("Converting {} events".format("only UTC" if utc_only else "all"))
-    ics_file = args[0]
-    _tzone = args[1] if len(args) > 1 else "UTC"
+def convert_events(utc_only, ics_file, timezone_="UTC"):
+    print(f'Converting {"only UTC" if utc_only else "all"} events')
 
-    print("... Reading {}".format(ics_file))
+    print(f"... Reading {ics_file}")
     with open(ics_file, "r") as f:
         cal = vobject.readOne(f)
-    change_tz(cal, new_timezone=tz.gettz(_tzone), default=tz.gettz("UTC"), utc_only=utc_only)
+    change_tz(cal, new_timezone=tz.gettz(timezone_), default=tz.gettz("UTC"), utc_only=utc_only)
 
-    out_name = "{}.converted".format(ics_file)
-    print("... Writing {}".format(out_name))
+    out_name = f"{ics_file}.converted"
+    print(f"... Writing {out_name}")
     with open(out_name, "wb") as out:
         cal.serialize(out)
 
@@ -59,34 +57,27 @@ def convert_events(utc_only, args):
 
 
 def main():
-    options, args = get_options()
-
-    if options.list:
+    args = get_arguments()
+    if args.list:
         show_timezones()
-    elif args:
-        convert_events(utc_only=options.utc, args=args)
+    elif args.ics_file:
+        convert_events(utc_only=args.utc, ics_file=args.ics_file, timezone_=args.timezone)
 
 
-def get_options():
+def get_arguments():
     # Configuration options
-    usage = """usage: %prog [options] ics_file [timezone]"""
-    parser = ArgumentParser(usage=usage, description="change_tz will convert the timezones in an ics file.")
-    parser.add_argument("--version", action="version", version=vobject.VERSION)
+    parser = ArgumentParser(description="change_tz will convert the timezones in an ics file.")
+    parser.add_argument("-V", "--version", action="version", version=vobject.VERSION)
 
     parser.add_argument(
         "-u", "--only-utc", dest="utc", action="store_true", default=False, help="Only change UTC events."
     )
-    parser.add_argument(
-        "-l", "--list", dest="list", action="store_true", default=False, help="List available timezones"
-    )
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-l", "--list", dest="list", action="store_true", default=False, help="List available timezones")
+    group.add_argument("ics_file", nargs="?", help="The ics file to process")
+    parser.add_argument("timezone", nargs="?", default="UTC", help="The timezone to convert to")
 
-    (cmdline_options, args) = parser.parse_args()
-    if not (args or cmdline_options.list):
-        print("error: too few arguments given")
-        print(parser.format_help())
-        return cmdline_options, False
-
-    return cmdline_options, args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
