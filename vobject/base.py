@@ -1,7 +1,5 @@
 """vobject module for reading vCard and vCalendar files."""
 
-from __future__ import print_function
-
 import codecs
 import copy
 import io
@@ -18,22 +16,16 @@ unicode_type = str
 
 
 def str_(s):
-    """
-    Return string
-    """
     return s
 
 
 def to_unicode(value):
     """Converts a string argument to a unicode string.
 
-    If the argument is already a unicode string, it is returned
-    unchanged.  Otherwise it must be a byte string and is decoded as utf8.
+    If the argument is already a unicode string, it is returned unchanged.
+    Otherwise it must be a byte string and is decoded as utf8.
     """
-    if isinstance(value, unicode_type):
-        return value
-
-    return value.decode("utf-8")
+    return value if isinstance(value, unicode_type) else value.decode("utf-8")
 
 
 def to_basestring(s):
@@ -42,10 +34,7 @@ def to_basestring(s):
     If the argument is already a byte string, it is returned unchanged.
     Otherwise it must be a unicode string and is encoded as utf8.
     """
-    if isinstance(s, bytes):
-        return s
-
-    return s.encode("utf-8")
+    return s if isinstance(s, bytes) else s.encode("utf-8")
 
 
 # ------------------------------------ Logging ---------------------------------
@@ -69,7 +58,7 @@ SPACEORTAB = SPACE + TAB
 # --------------------------------- Main classes -------------------------------
 
 
-class VBase(object):
+class VBase:
     """
     Base class for ContentLine and Component.
 
@@ -88,7 +77,8 @@ class VBase(object):
     """
 
     def __init__(self, group=None, *args, **kwds):
-        super(VBase, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
+        self.name = None
         self.group = group
         self.behavior = None
         self.parentBehavior = None
@@ -101,23 +91,15 @@ class VBase(object):
         self.isNative = copyit.isNative
 
     def validate(self, *args, **kwds):
-        """
-        Call the behavior's validate method, or return True.
-        """
-        if self.behavior:
-            return self.behavior.validate(self, *args, **kwds)
-        return True
+        """Call the behavior's validate method, or return True."""
+        return self.behavior.validate(self, *args, **kwds) if self.behavior else True
 
     def getChildren(self):
-        """
-        Return an iterable containing the contents of the object.
-        """
+        """Return an iterable containing the contents of the object."""
         return []
 
     def clearBehavior(self, cascade=True):
-        """
-        Set behavior to None. Do for all descendants if cascading.
-        """
+        """Set behavior to None. Do for all descendants if cascading."""
         self.behavior = None
         if cascade:
             self.transformChildrenFromNative()
@@ -136,7 +118,7 @@ class VBase(object):
                 behavior = getBehavior(self.name, knownChildTup[2])
                 if behavior is not None:
                     self.setBehavior(behavior, cascade)
-                    if isinstance(self, ContentLine) and self.encoded:
+                    if isinstance(self, ContentLine) and self.encoded:  # pylint:disable=e1101
                         self.behavior.decode(self)
             elif isinstance(self, ContentLine):
                 self.behavior = parentBehavior.defaultBehavior
@@ -144,9 +126,7 @@ class VBase(object):
                     self.behavior.decode(self)
 
     def setBehavior(self, behavior, cascade=True):
-        """
-        Set behavior. If cascade is True, autoBehavior all descendants.
-        """
+        """Set behavior. If cascade is True, autoBehavior all descendants."""
         self.behavior = behavior
         if cascade:
             for obj in self.getChildren():
@@ -175,11 +155,11 @@ class VBase(object):
                     if lineNumber is not None:
                         e.lineNumber = lineNumber
                     raise
-                else:
-                    msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    msg = msg + " (" + str(self_orig) + ")"
-                    raise ParseError(msg, lineNumber)
+
+                msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                msg = msg + " (" + str(self_orig) + ")"
+                raise ParseError(msg, lineNumber)
 
     def transformFromNative(self):
         """
@@ -204,24 +184,18 @@ class VBase(object):
                     if lineNumber is not None:
                         e.lineNumber = lineNumber
                     raise
-                else:
-                    msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    raise NativeError(msg, lineNumber)
+
+                msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                raise NativeError(msg, lineNumber)
         else:
             return self
 
     def transformChildrenToNative(self):
-        """
-        Recursively replace children with their native representation.
-        """
-        pass
+        """Recursively replace children with their native representation."""
 
     def transformChildrenFromNative(self, clearBehavior=True):
-        """
-        Recursively transform native children to vanilla representations.
-        """
-        pass
+        """Recursively transform native children to vanilla representations."""
 
     def serialize(self, buf=None, lineLength=75, validate=True, behavior=None, *args, **kwargs):
         """
@@ -244,8 +218,7 @@ class VBase(object):
 
 def toVName(name, stripNum=0, upper=False):
     """
-    Turn a Python name into an iCalendar style name,
-    optionally uppercase and with characters stripped off.
+    Turn a Python name into an iCalendar style name, optionally uppercase and with characters stripped off.
     """
     if upper:
         name = name.upper()
@@ -287,7 +260,7 @@ class ContentLine(VBase):
 
         Group is used as a positional argument to match parseLine's return
         """
-        super(ContentLine, self).__init__(group, *args, **kwds)
+        super().__init__(group, *args, **kwds)
 
         self.name = name.upper()
         self.encoded = encoded
@@ -335,7 +308,7 @@ class ContentLine(VBase):
         return newcopy
 
     def copy(self, copyit):
-        super(ContentLine, self).copy(copyit)
+        super().copy(copyit)
         self.name = copyit.name
         self.value = copy.copy(copyit.value)
         self.encoded = self.encoded
@@ -348,7 +321,7 @@ class ContentLine(VBase):
     def __eq__(self, other):
         try:
             return (self.name == other.name) and (self.params == other.params) and (self.value == other.value)
-        except Exception:
+        except AttributeError:
             return False
 
     def __getattr__(self, name):
@@ -376,10 +349,7 @@ class ContentLine(VBase):
         which are legal in IANA tokens.
         """
         if name.endswith("_param"):
-            if type(value) is list:
-                self.params[toVName(name, 6, True)] = value
-            else:
-                self.params[toVName(name, 6, True)] = [value]
+            self.params[toVName(name, 6, True)] = value if type(value) is list else [value]
         elif name.endswith("_paramlist"):
             if type(value) is list:
                 self.params[toVName(name, 10, True)] = value
@@ -454,7 +424,7 @@ class Component(VBase):
     """
 
     def __init__(self, name=None, *args, **kwds):
-        super(Component, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.contents = {}
         if name:
             self.name = name.upper()
@@ -472,7 +442,7 @@ class Component(VBase):
         return newcopy
 
     def copy(self, copyit):
-        super(Component, self).copy(copyit)
+        super().copy(copyit)
 
         # deep copy of contents
         self.contents = {}
@@ -615,8 +585,7 @@ class Component(VBase):
         Return an iterable of all children.
         """
         for objList in self.contents.values():
-            for obj in objList:
-                yield obj
+            yield from objList
 
     def components(self):
         """
@@ -633,9 +602,9 @@ class Component(VBase):
     def sortChildKeys(self):
         try:
             first = [s for s in self.behavior.sortFirst if s in self.contents]
-        except Exception:
+        except AttributeError:
             first = []
-        return first + sorted(k for k in self.contents.keys() if k not in first)
+        return first + sorted(k for k in self.contents if k not in first)
 
     def getSortedChildren(self):
         return [obj for k in self.sortChildKeys() for obj in self.contents[k]]
@@ -702,7 +671,9 @@ class VObjectError(Exception):
 
 
 class ParseError(VObjectError):
-    pass
+    def __init__(self, msg, line_number=None, *, inputs=None):
+        super().__init__(msg, line_number)
+        self.inputs = inputs
 
 
 class ValidateError(VObjectError):
@@ -895,9 +866,8 @@ def getLogicalLines(fp, allowQP=True):
             line = fp.readline()
             if line == "":
                 break
-            else:
-                line = line.rstrip(CRLF)
-                lineNumber += 1
+            line = line.rstrip(CRLF)
+            lineNumber += 1
             if line.rstrip() == "":
                 if logicalLine.tell() > 0:
                     yield logicalLine.getvalue(), lineStartNumber
@@ -947,38 +917,38 @@ def dquoteEscape(param):
     return param
 
 
-def foldOneLine(outbuf, input, lineLength=75):
+def foldOneLine(outbuf, input_, lineLength=75):
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
     broken across lines
 
     TO-DO: This all seems odd. Is it still needed, especially in python3?
     """
-    if len(input) < lineLength:
-        # Optimize for unfolded line case
+
+    def write_to_outbuf(text):
+        # TODO: remove py2
         try:
-            outbuf.write(bytes(input, "UTF-8"))
-        except Exception:
+            outbuf.write(bytes(text, "UTF-8"))
+        except Exception:  # pylint: disable=broad-exception-caught
             # fall back on py2 syntax
-            outbuf.write(input)
+            outbuf.write(text)
+
+    if len(input_) < lineLength:
+        # Optimize for unfolded line case
+        write_to_outbuf(text=input_)
 
     else:
         # Look for valid utf8 range and write that out
         start = 0
         written = 0
         counter = 0  # counts line size in bytes
-        decoded = to_unicode(input)
-        length = len(to_basestring(input))
+        decoded = to_unicode(input_)
+        length = len(to_basestring(input_))
         while written < length:
             s = decoded[start]  # take one char
             size = len(to_basestring(s))  # calculate it's size in bytes
             if counter + size > lineLength:
-                try:
-                    outbuf.write(bytes("\r\n ", "UTF-8"))
-                except Exception:
-                    # fall back on py2 syntax
-                    outbuf.write("\r\n ")
-
+                write_to_outbuf(text="\r\n ")
                 counter = 1  # one for space
 
             if str is unicode_type:
@@ -990,11 +960,7 @@ def foldOneLine(outbuf, input, lineLength=75):
             written += size
             counter += size
             start += 1
-    try:
-        outbuf.write(bytes("\r\n", "UTF-8"))
-    except Exception:
-        # fall back on py2 syntax
-        outbuf.write("\r\n")
+    write_to_outbuf(text="\r\n")
 
 
 def defaultSerialize(obj, buf, lineLength):
@@ -1148,7 +1114,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
             yield stack.pop()
 
     except ParseError as e:
-        e.input = streamOrString
+        e.inputs = streamOrString
         raise
 
 
@@ -1163,7 +1129,7 @@ def readOne(stream, validate=False, transform=True, ignoreUnreadable=False, allo
 __behaviorRegistry = {}
 
 
-def registerBehavior(behavior, name=None, default=False, id=None):
+def registerBehavior(behavior, name=None, default=False, id_=None):
     """
     Register the given behavior.
 
@@ -1172,18 +1138,18 @@ def registerBehavior(behavior, name=None, default=False, id=None):
     """
     if not name:
         name = behavior.name.upper()
-    if id is None:
-        id = behavior.versionString
+    if id_ is None:
+        id_ = behavior.versionString
     if name in __behaviorRegistry:
         if default:
-            __behaviorRegistry[name].insert(0, (id, behavior))
+            __behaviorRegistry[name].insert(0, (id_, behavior))
         else:
-            __behaviorRegistry[name].append((id, behavior))
+            __behaviorRegistry[name].append((id_, behavior))
     else:
-        __behaviorRegistry[name] = [(id, behavior)]
+        __behaviorRegistry[name] = [(id_, behavior)]
 
 
-def getBehavior(name, id=None):
+def getBehavior(name, id_=None):
     """
     Return a matching behavior if it exists, or None.
 
@@ -1191,21 +1157,21 @@ def getBehavior(name, id=None):
     """
     name = name.upper()
     if name in __behaviorRegistry:
-        if id:
+        if id_:
             for n, behavior in __behaviorRegistry[name]:
-                if n == id:
+                if n == id_:
                     return behavior
 
         return __behaviorRegistry[name][0][1]
     return None
 
 
-def newFromBehavior(name, id=None):
+def newFromBehavior(name, id_=None):
     """
     Given a name, return a behaviored ContentLine or Component.
     """
     name = name.upper()
-    behavior = getBehavior(name, id)
+    behavior = getBehavior(name, id_)
     if behavior is None:
         raise VObjectError("No behavior found named {0!s}".format(name))
     if behavior.isComponent:

@@ -2,7 +2,7 @@ from . import base
 
 
 # ------------------------ Abstract class for behavior --------------------------
-class Behavior(object):
+class Behavior:
     """
     Behavior (validation, encoding, and transformations) for vobjects.
 
@@ -139,7 +139,6 @@ class Behavior(object):
     @classmethod
     def generateImplicitParameters(cls, obj):
         """Generate any required information that don't yet exist."""
-        pass
 
     @classmethod
     def serialize(cls, obj, buf, lineLength, validate=True, *args, **kwargs):

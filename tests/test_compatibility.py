@@ -1,3 +1,4 @@
+# pylint: disable=c0301,c0302
 import vobject
 
 
@@ -5,42 +6,36 @@ def test_radicale_0816():
     vobjs = vobject.readComponents(radicale_0816, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_0827():
     vobjs = vobject.readComponents(radicale_0827, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_1238_0():
     vobjs = vobject.readComponents(radicale_1238_0, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_1238_1():
     vobjs = vobject.readComponents(radicale_1238_1, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_1238_2():
     vobjs = vobject.readComponents(radicale_1238_2, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_1238_3():
     vobjs = vobject.readComponents(radicale_1238_3, allowQP=True)
     for vo in vobjs:
         assert vo is not None
-    return
 
 
 def test_radicale_1587():
@@ -51,7 +46,6 @@ def test_radicale_1587():
         for line in lines:
             if line.startswith("GEO"):
                 assert line == "GEO:37.386013;-122.082932"
-    return
 
 
 # Test data

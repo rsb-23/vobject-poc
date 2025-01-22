@@ -1,6 +1,5 @@
+# pylint: disable=c0302
 """Definitions and behavior for iCalendar, also known as vCalendar 2.0"""
-
-from __future__ import print_function
 
 import base64
 import datetime
@@ -79,19 +78,19 @@ def getTzid(tzid, smart=True):
     """
     Return the tzid if it exists, or None.
     """
-    tz = __tzidMap.get(toUnicode(tzid))
-    if smart and tzid and not tz:
+    _tz = __tzidMap.get(toUnicode(tzid))
+    if smart and tzid and not _tz:
         try:
             from pytz import UnknownTimeZoneError, timezone
 
             try:
-                tz = timezone(tzid)
-                registerTzid(toUnicode(tzid), tz)
+                _tz = timezone(tzid)
+                registerTzid(toUnicode(tzid), _tz)
             except UnknownTimeZoneError as e:
                 logging.error("Unknown Timezone: %r", e.args[0])
         except ImportError as e:
             logging.error(e)
-    return tz
+    return _tz
 
 
 utc = tz.tzutc()
@@ -119,7 +118,7 @@ class TimezoneComponent(Component):
         """
         Accept an existing Component or a tzinfo class.
         """
-        super(TimezoneComponent, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
         self.isNative = True
         # hack to make sure a behavior is assigned
         if self.behavior is None:
@@ -284,9 +283,10 @@ class TimezoneComponent(Component):
             if working[transitionTo] is not None:
                 completed[transitionTo].append(working[transitionTo])
 
-        self.tzid = []
-        self.daylight = []
-        self.standard = []
+        # FIXME: pylint warning attribute-defined-outside-init
+        self.tzid = []  # pylint:disable=w0201
+        self.daylight = []  # pylint:disable=w0201
+        self.standard = []  # pylint:disable=w0201
 
         self.add("tzid").value = self.pickTzid(tzinfo, True)
 
@@ -403,7 +403,7 @@ class RecurringComponent(Component):
     """
 
     def __init__(self, *args, **kwds):
-        super(RecurringComponent, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
 
         self.isNative = True
 
@@ -670,7 +670,7 @@ class RecurringComponent(Component):
         if name == "rruleset":
             self.setrruleset(value)
         else:
-            super(RecurringComponent, self).__setattr__(name, value)
+            super().__setattr__(name, value)
 
 
 class TextBehavior(behavior.Behavior):
@@ -1009,13 +1009,13 @@ class VCalendar2_0(VCalendarComponentBehavior):
 
         findTzids(obj, tzidsUsed)
         oldtzids = [toUnicode(x.tzid.value) for x in getattr(obj, "vtimezone_list", [])]
-        for tzid in tzidsUsed.keys():
+        for tzid in tzidsUsed:
             tzid = toUnicode(tzid)
             if tzid != "UTC" and tzid not in oldtzids:
                 obj.add(TimezoneComponent(tzinfo=getTzid(tzid)))
 
     @classmethod
-    def serialize(cls, obj, buf, lineLength, validate=True):
+    def serialize(cls, obj, buf, lineLength, validate=True, *args, **kwargs):
         """
         Set implicit parameters, do encoding, return unicode string.
 
@@ -1051,7 +1051,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
             first_components = [
                 s for s in cls.sortFirst if s in obj.contents and isinstance(obj.contents[s][0], Component)
             ]
-        except Exception:
+        except VObjectError:
             first_props = first_components = []
             # first_components = []
 
@@ -1622,8 +1622,8 @@ class PeriodBehavior(behavior.Behavior):
             transformed = []
             for tup in obj.value:
                 transformed.append(periodToString(tup, cls.forceUTC))
-            if len(transformed) > 0:
-                tzid = TimezoneComponent.registerTzinfo(tup[0].tzinfo)
+            if transformed:
+                tzid = TimezoneComponent.registerTzinfo(tup[0].tzinfo)  # pylint:disable=W0631
                 if not cls.forceUTC and tzid is not None:
                     obj.tzid_param = tzid
 
@@ -1848,8 +1848,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
     def error(msg):
         if strict:
             raise ParseError(msg)
-        else:
-            logging.error(msg)
+        logging.error(msg)
 
     # vars which control state machine
     charIterator = enumerate(s)
@@ -1860,7 +1859,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
+            _, char = next(charIterator)
         except StopIteration:
             char = "eof"
 
@@ -1891,7 +1890,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
                 current.append("\\" + char)
 
         elif state == "end":  # an end state
-            if len(current) or len(results) == 0:
+            if current or not results:
                 current = "".join(current)
                 results.append(current)
             return results
@@ -1924,8 +1923,7 @@ def stringToDurations(s, strict=False):
     def error(msg):
         if strict:
             raise ParseError(msg)
-        else:
-            raise ParseError(msg)
+        raise ParseError(msg)
 
     # vars which control state machine
     charIterator = enumerate(s)
@@ -1942,7 +1940,7 @@ def stringToDurations(s, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
+            _, char = next(charIterator)
         except StopIteration:
             char = "eof"
 
@@ -2037,10 +2035,10 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
         try:
             return stringToDateTime(contentline.value, tzinfo)
         except (ParseError, ValueError):
-            if allowSignatureMismatch:
-                return stringToDate(contentline.value)
-            else:
+            if not allowSignatureMismatch:
                 raise
+            return stringToDate(contentline.value)
+    return None
 
 
 def stringToPeriod(s, tzinfo=None):
@@ -2116,14 +2114,14 @@ def getTransition(transitionTo, year, tzinfo):
         """
         months = range(1, 13)
         days = range(1, 32)
-        hours = range(0, 24)
+        hours = range(24)
         if month is None:
-            for month in months:
-                yield datetime.datetime(year, month, 1)
+            for _month in months:
+                yield datetime.datetime(year, _month, 1)
         elif day is None:
-            for day in days:
+            for _day in days:
                 try:
-                    yield datetime.datetime(year, month, day)
+                    yield datetime.datetime(year, month, _day)
                 except ValueError:
                     pass
         else:
