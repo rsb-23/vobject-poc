@@ -13,9 +13,9 @@ def getSortKey(component):
 
     # it's not quite as simple as getUID, need to account for recurrenceID and sequence
 
-    def getSequence(component):
+    def getSequence(component) -> str:
         sequence = component.getChildValue("sequence", 0)
-        return "{0:05d}".format(int(sequence))
+        return f"{int(sequence):05d}"
 
     def getRecurrenceID(component):
         recurrence_id = component.getChildValue("recurrence_id", None)

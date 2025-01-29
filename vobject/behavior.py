@@ -76,8 +76,7 @@ class Behavior:
 
         """
         if not cls.allowGroup and obj.group is not None:
-            err = "{0} has a group, but this object doesn't support groups".format(obj)
-            raise base.VObjectError(err)
+            raise base.VObjectError(f"{obj} has a group, but this object doesn't support groups")
         if isinstance(obj, base.ContentLine):
             return cls.lineValidate(obj, raiseException, complainUnrecognized)
         elif isinstance(obj, base.Component):
@@ -90,18 +89,15 @@ class Behavior:
             for key, val in cls.knownChildren.items():
                 if count.get(key, 0) < val[0]:
                     if raiseException:
-                        m = "{0} components must contain at least {1} {2}"
-                        raise base.ValidateError(m.format(cls.name, val[0], key))
+                        raise base.ValidateError(f"{cls.name} components must contain at least {val[0]} {key}")
                     return False
                 if val[1] and count.get(key, 0) > val[1]:
                     if raiseException:
-                        m = "{0} components cannot contain more than {1} {2}"
-                        raise base.ValidateError(m.format(cls.name, val[1], key))
+                        raise base.ValidateError(f"{cls.name} components cannot contain more than {val[1]} {key}")
                     return False
             return True
         else:
-            err = "{0} is not a Component or Contentline".format(obj)
-            raise base.VObjectError(err)
+            raise base.VObjectError(f"{obj} is not a Component or Contentline")
 
     @classmethod
     def lineValidate(cls, line, raiseException, complainUnrecognized):

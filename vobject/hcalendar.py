@@ -88,9 +88,7 @@ class HCalendar(VCalendar2_0):
                 # TODO: Spec says we should handle when dtstart isn't included
 
                 out(
-                    '<abbr class="dtstart", title="{0!s}">{1!s}</abbr>\r\n'.format(
-                        dtstart.strftime(machine), dtstart.strftime(timeformat)
-                    )
+                    f'<abbr class="dtstart", title="{dtstart.strftime(machine)}">{dtstart.strftime(timeformat)}</abbr>\r\n'
                 )
 
                 # DTEND
@@ -108,9 +106,7 @@ class HCalendar(VCalendar2_0):
                         human = dtend - timedelta(days=1)
 
                     out(
-                        '- <abbr class="dtend", title="{0!s}">{1!s}</abbr>\r\n'.format(
-                            dtend.strftime(machine), human.strftime(timeformat)
-                        )
+                        f'- <abbr class="dtend", title="{dtend.strftime(machine)}">{human.strftime(timeformat)}</abbr>\r\n'
                     )
 
             # LOCATION

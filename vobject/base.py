@@ -156,9 +156,10 @@ class VBase:
                         e.lineNumber = lineNumber
                     raise
 
-                msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                msg = msg + " (" + str(self_orig) + ")"
+                msg = (
+                    f"In transformToNative, unhandled exception on line {lineNumber}: {sys.exc_info()[0]}:"
+                    f" {sys.exc_info()[1]} ({self_orig})"
+                )
                 raise ParseError(msg, lineNumber)
 
     def transformFromNative(self):
@@ -185,8 +186,10 @@ class VBase:
                         e.lineNumber = lineNumber
                     raise
 
-                msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                msg = (
+                    f"In transformFromNative, unhandled exception on line {lineNumber} {sys.exc_info()[0]}:"
+                    f" {sys.exc_info()[1]}"
+                )
                 raise NativeError(msg, lineNumber)
         else:
             return self
@@ -208,11 +211,11 @@ class VBase:
 
         if behavior:
             if DEBUG:
-                logger.debug("serializing {0!s} with behavior {1!s}".format(self.name, behavior))
+                logger.debug("serializing %s with behavior %s", self.name, self.behavior)
             return behavior.serialize(self, buf, lineLength, validate, *args, **kwargs)
         else:
             if DEBUG:
-                logger.debug("serializing {0!s} without behavior".format(self.name))
+                logger.debug("serializing %s without behavior", self.name)
             return defaultSerialize(self, buf, lineLength)
 
 
@@ -385,15 +388,15 @@ class ContentLine(VBase):
 
     def __str__(self):
         try:
-            return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
+            return f"<{self.name}{self.params}{self.valueRepr()}>"
         except UnicodeEncodeError:
-            return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr().encode("utf-8"))
+            return f"<{self.name}{self.params}{self.valueRepr().encode('utf-8')}>"
 
     def __repr__(self):
         return self.__str__()
 
     def __unicode__(self):
-        return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
+        return f"<{self.name}{self.params}{self.valueRepr()}>"
 
     def prettyPrint(self, level=0, tabwidth=3):
         pre = " " * level * tabwidth
@@ -642,9 +645,9 @@ class Component(VBase):
 
     def __str__(self):
         if self.name:
-            return "<{0}| {1}>".format(self.name, self.getSortedChildren())
+            return f"<{self.name}| {self.getSortedChildren()}>"
         else:
-            return "<*unnamed*| {0}>".format(self.getSortedChildren())
+            return f"<*unnamed*| {self.getSortedChildren()}>"
 
     def __repr__(self):
         return self.__str__()
@@ -665,7 +668,7 @@ class VObjectError(Exception):
 
     def __str__(self):
         if hasattr(self, "lineNumber"):
-            return "At line {0!s}: {1!s}".format(self.lineNumber, self.msg)
+            return f"At line {self.lineNumber}: {self.msg}"
         else:
             return repr(self.msg)
 
@@ -783,7 +786,7 @@ def parseLine(line, lineNumber=None):
     """
     match = line_re.match(line)
     if match is None:
-        raise ParseError("Failed to parse line: {0!s}".format(line), lineNumber)
+        raise ParseError(f"Failed to parse line: {line}", lineNumber)
     # Underscores are replaced with dash to work around Lotus Notes
     return (
         match.group("name").replace("_", "-"),
@@ -975,12 +978,12 @@ def defaultSerialize(obj, buf, lineLength):
         else:
             groupString = obj.group + "."
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}BEGIN:{obj.name}", lineLength)
         for child in obj.getSortedChildren():
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}END:{obj.name}", lineLength)
 
     elif isinstance(obj, ContentLine):
         startedEncoded = obj.encoded
@@ -996,13 +999,13 @@ def defaultSerialize(obj, buf, lineLength):
         for key in keys:
             paramstr = ",".join(dquoteEscape(p) for p in obj.params[key])
             try:
-                s.write(";{0}={1}".format(key, paramstr))
+                s.write(f";{key}={paramstr}")
             except (UnicodeDecodeError, UnicodeEncodeError):
-                s.write(";{0}={1}".format(key, paramstr.encode("utf-8")))
+                s.write(f";{key}={paramstr.encode('utf-8')}")
         try:
-            s.write(":{0}".format(obj.value))
+            s.write(f":{obj.value}")
         except (UnicodeDecodeError, UnicodeEncodeError):
-            s.write(":{0}".format(obj.value.encode("utf-8")))
+            s.write(f":{obj.value.encode('utf-8')}")
         if obj.behavior and not startedEncoded:
             obj.behavior.decode(obj)
         foldOneLine(outbuf, s.getvalue(), lineLength)
@@ -1082,8 +1085,7 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
                 stack.top().setProfile(vline.value)
             elif vline.name == "END":
                 if len(stack) == 0:
-                    err = "Attempted to end the {0} component but it was never opened"
-                    raise ParseError(err.format(vline.value), n)
+                    raise ParseError(f"Attempted to end the {vline.value} component but it was never opened", n)
 
                 if vline.value.upper() == stack.topName():  # START matches END
                     if len(stack) == 1:
@@ -1102,15 +1104,14 @@ def readComponents(streamOrString, validate=False, transform=True, ignoreUnreada
                     else:
                         stack.modifyTop(stack.pop())
                 else:
-                    err = "{0} component wasn't closed"
-                    raise ParseError(err.format(stack.topName()), n)
+                    raise ParseError(f"{stack.topName()} component wasn't closed", n)
             else:
                 stack.modifyTop(vline)  # not a START or END line
         if stack.top():
             if stack.topName() is None:
                 logger.warning("Top level component was never named")
             elif stack.top().useBegin:
-                raise ParseError("Component {0!s} was never closed".format((stack.topName())), n)
+                raise ParseError(f"Component {stack.topName()} was never closed", n)
             yield stack.pop()
 
     except ParseError as e:
@@ -1173,7 +1174,7 @@ def newFromBehavior(name, id_=None):
     name = name.upper()
     behavior = getBehavior(name, id_)
     if behavior is None:
-        raise VObjectError("No behavior found named {0!s}".format(name))
+        raise VObjectError(f"No behavior found named {name}")
     if behavior.isComponent:
         obj = Component(name)
     else:
