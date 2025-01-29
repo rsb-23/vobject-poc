@@ -689,76 +689,55 @@ class NativeError(VObjectError):
 
 # --------- Parsing functions and parseLine regular expressions ----------------
 
-patterns = {}
-
 # Note that underscore is not legal for names, it's included because
 # Lotus Notes uses it
-patterns["name"] = "[a-zA-Z0-9_-]+"  # 1*(ALPHA / DIGIT / "-")
-patterns["safe_char"] = '[^";:,]'
-patterns["qsafe_char"] = '[^"]'
+P_NAME = "[a-zA-Z0-9_-]+"  # 1*(ALPHA / DIGIT / "-")
+P_SAFE_CHAR = '[^";:,]'
+P_QSAFE_CHAR = '[^"]'
 
 # the combined Python string replacement and regex syntax is a little confusing;
 # remember that {foobar} is replaced with patterns['foobar'], so for instance
 # param_value is any number of safe_chars or any number of qsaf_chars surrounded
 # by double quotes.
-
-patterns["param_value"] = ' "{qsafe_char!s} * " | {safe_char!s} * '.format(**patterns)
-
+P_PARAM_VALUE = f' "{P_QSAFE_CHAR} * " | {P_SAFE_CHAR} * '
 
 # get a tuple of two elements, one will be empty, the other will have the value
-patterns["param_value_grouped"] = (
-    """
-" ( {qsafe_char!s} * )" | ( {safe_char!s} + )
-""".format(
-        **patterns
-    )
-)
+P_PARAM_VALUE_GROUPED = f' " ( {P_QSAFE_CHAR} * )" | ( {P_SAFE_CHAR} + ) '
 
 # get a parameter and its values, without any saved groups
-patterns["param"] = (
-    r"""
-; (?: {name!s} )                     # parameter name
+P_PARAM = rf"""
+; (?: {P_NAME} )                     # parameter name
 (?:
-    (?: = (?: {param_value!s} ) )?   # 0 or more parameter values, multiple
-    (?: , (?: {param_value!s} ) )*   # parameters are comma separated
+    (?: = (?: {P_PARAM_VALUE} ) )?   # 0 or more parameter values, multiple
+    (?: , (?: {P_PARAM_VALUE} ) )*   # parameters are comma separated
 )*
-""".format(
-        **patterns
-    )
-)
+"""
 
 # get a parameter, saving groups for name and value (value still needs parsing)
-patterns["params_grouped"] = (
-    r"""
-; ( {name!s} )
+P_PARAMS_GROUPED = rf"""
+; ( {P_NAME} )
 
 (?: =
     (
-        (?:   (?: {param_value!s} ) )?   # 0 or more parameter values, multiple
-        (?: , (?: {param_value!s} ) )*   # parameters are comma separated
+        (?:   (?: {P_PARAM_VALUE} ) )?   # 0 or more parameter values, multiple
+        (?: , (?: {P_PARAM_VALUE} ) )*   # parameters are comma separated
     )
 )?
-""".format(
-        **patterns
-    )
-)
+"""
 
 # get a full content line, break it up into group, name, parameters, and value
-patterns["line"] = (
-    r"""
-^ ((?P<group> {name!s})\.)?(?P<name> {name!s}) # name group
-  (?P<params> ;?(?: {param!s} )* )               # params group (may be empty)
+P_LINE = rf"""
+^ ((?P<group> {P_NAME})\.)?(?P<name> {P_NAME}) # name group
+  (?P<params> ;?(?: {P_PARAM} )* )             # params group (may be empty)
 : (?P<value> .* )$                             # value group
-""".format(
-        **patterns
-    )
-)
+"""
+
 
 ' "%(qsafe_char)s*" | %(safe_char)s* '  # what is this line?? - never assigned?
 
-param_values_re = re.compile(patterns["param_value_grouped"], re.VERBOSE)
-params_re = re.compile(patterns["params_grouped"], re.VERBOSE)
-line_re = re.compile(patterns["line"], re.DOTALL | re.VERBOSE)
+param_values_re = re.compile(P_PARAM_VALUE_GROUPED, re.VERBOSE)
+params_re = re.compile(P_PARAMS_GROUPED, re.VERBOSE)
+line_re = re.compile(P_LINE, re.DOTALL | re.VERBOSE)
 begin_re = re.compile("BEGIN", re.IGNORECASE)
 
 
@@ -798,23 +777,19 @@ def parseLine(line, lineNumber=None):
 
 # logical line regular expressions
 
-patterns["lineend"] = r"(?:\r\n|\r|\n|$)"
-patterns["wrap"] = r"{lineend!s} [\t ]".format(**patterns)
-patterns["logicallines"] = (
-    r"""
+P_LINEEND = r"(?:\r\n|\r|\n|$)"
+P_WRAP = rf"{P_LINEEND} [\t ]"
+P_LOGICALLINES = rf"""
 (
-   (?: [^\r\n] | {wrap!s} )*
-   {lineend!s}
+   (?: [^\r\n] | {P_WRAP} )*
+   {P_LINEEND}
 )
-""".format(
-        **patterns
-    )
-)
+"""
 
-patterns["wraporend"] = r"({wrap!s} | {lineend!s} )".format(**patterns)
+P_WRAPOREND = rf"({P_WRAP} | {P_LINEEND} )"
 
-wrap_re = re.compile(patterns["wraporend"], re.VERBOSE)
-logical_lines_re = re.compile(patterns["logicallines"], re.VERBOSE)
+wrap_re = re.compile(P_WRAPOREND, re.VERBOSE)
+logical_lines_re = re.compile(P_LOGICALLINES, re.VERBOSE)
 
 testLines = """
 Line 0 text

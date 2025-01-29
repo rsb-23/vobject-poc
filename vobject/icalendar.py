@@ -46,7 +46,7 @@ from .base import (
 DATENAMES = ("rdate", "exdate")
 RULENAMES = ("exrule", "rrule")
 DATESANDRULES = ("exrule", "rrule", "rdate", "exdate")
-PRODID = "-//PYVOBJECT//NONSGML Version %s//EN" % VERSION
+PRODID = f"-//PYVOBJECT//NONSGML Version {VERSION}//EN"
 
 WEEKDAYS = "MO", "TU", "WE", "TH", "FR", "SA", "SU"
 FREQUENCIES = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SECONDLY")
