@@ -1075,7 +1075,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, "{groupString}END:{obj.name}", lineLength)
+            foldOneLine(outbuf, f"{groupString}END:{obj.name}", lineLength)
         out = buf or outbuf.getvalue()
         if undoTransform:
             obj.transformToNative()
