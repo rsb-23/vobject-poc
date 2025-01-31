@@ -46,7 +46,7 @@ from .base import (
 DATENAMES = ("rdate", "exdate")
 RULENAMES = ("exrule", "rrule")
 DATESANDRULES = ("exrule", "rrule", "rdate", "exdate")
-PRODID = "-//PYVOBJECT//NONSGML Version %s//EN" % VERSION
+PRODID = f"-//PYVOBJECT//NONSGML Version {VERSION}//EN"
 
 WEEKDAYS = "MO", "TU", "WE", "TH", "FR", "SA", "SU"
 FREQUENCIES = ("YEARLY", "MONTHLY", "WEEKLY", "DAILY", "HOURLY", "MINUTELY", "SECONDLY")
@@ -330,7 +330,7 @@ class TimezoneComponent(Component):
                     endString = ";UNTIL=" + dateTimeToString(endDate)
                 else:
                     endString = ""
-                new_rule = "FREQ=YEARLY{0!s};BYMONTH={1!s}{2!s}".format(dayString, rule["month"], endString)
+                new_rule = f"FREQ=YEARLY{dayString};BYMONTH={rule['month']}{endString}"
 
                 comp.add("rrule").value = new_rule
 
@@ -367,10 +367,10 @@ class TimezoneComponent(Component):
                 return toUnicode(tzinfo.tzname(dt))
 
         # There was no standard time in 2000!
-        raise VObjectError("Unable to guess TZID for tzinfo {0!s}".format(tzinfo))
+        raise VObjectError(f"Unable to guess TZID for tzinfo {tzinfo}")
 
     def __str__(self):
-        return "<VTIMEZONE | {0}>".format(getattr(self, "tzid", "No TZID"))
+        return f"<VTIMEZONE | {getattr(self, 'tzid', 'No TZID')}>"
 
     def __repr__(self):
         return self.__str__()
@@ -751,7 +751,7 @@ class RecurringBehavior(VCalendarComponentBehavior):
             now = datetime.datetime.now(utc)
             now = dateTimeToString(now)
             host = socket.gethostname()
-            obj.add(ContentLine("UID", [], "{0} - {1}@{2}".format(now, rand, host)))
+            obj.add(ContentLine("UID", [], f"{now} - {rand}@{host}"))
 
         if not hasattr(obj, "dtstamp"):
             now = datetime.datetime.now(utc)
@@ -1042,7 +1042,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
         else:
             groupString = obj.group + "."
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}BEGIN:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}BEGIN:{obj.name}", lineLength)
 
         try:
             first_props = [
@@ -1075,7 +1075,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
             # validate is recursive, we only need to validate once
             child.serialize(outbuf, lineLength, validate=False)
         if obj.useBegin:
-            foldOneLine(outbuf, "{0}END:{1}".format(groupString, obj.name), lineLength)
+            foldOneLine(outbuf, f"{groupString}END:{obj.name}", lineLength)
         out = buf or outbuf.getvalue()
         if undoTransform:
             obj.transformToNative()
@@ -1720,21 +1720,21 @@ def timedeltaToString(delta):
         output += "-"
     output += "P"
     if days:
-        output += "{}D".format(days)
+        output += f"{days}D"
     if hours or minutes or seconds:
         output += "T"
     elif not days:  # Deal with zero duration
         output += "T0S"
     if hours:
-        output += "{}H".format(hours)
+        output += f"{hours}H"
     if minutes:
-        output += "{}M".format(minutes)
+        output += f"{minutes}M"
     if seconds:
-        output += "{}S".format(seconds)
+        output += f"{seconds}S"
     return output
 
 
-def timeToString(dateOrDateTime):
+def timeToString(dateOrDateTime) -> str:
     """
     Wraps dateToString and dateTimeToString, returning the results
     of either based on the type of the argument
@@ -1744,28 +1744,19 @@ def timeToString(dateOrDateTime):
     return dateToString(dateOrDateTime)
 
 
-def dateToString(date):
-    year = numToDigits(date.year, 4)
-    month = numToDigits(date.month, 2)
-    day = numToDigits(date.day, 2)
-    return year + month + day
+def dateToString(date) -> str:
+    return f"{date.year:04d}{date.month:02d}{date.day:02d}"
 
 
-def dateTimeToString(dateTime, convertToUTC=False):
+def dateTimeToString(dateTime, convertToUTC=False) -> str:
     """
     Ignore tzinfo unless convertToUTC.  Output string.
     """
     if dateTime.tzinfo and convertToUTC:
         dateTime = dateTime.astimezone(utc)
 
-    datestr = "{0}{1}{2}T{3}{4}{5}".format(
-        numToDigits(dateTime.year, 4),
-        numToDigits(dateTime.month, 2),
-        numToDigits(dateTime.day, 2),
-        numToDigits(dateTime.hour, 2),
-        numToDigits(dateTime.minute, 2),
-        numToDigits(dateTime.second, 2),
-    )
+    datestr = f"{dateToString(dateTime)}T{dateTime.hour:02d}{dateTime.minute:02d}{dateTime.second:02d}"
+
     if tzinfo_eq(dateTime.tzinfo, utc):
         datestr += "Z"
     return datestr
@@ -1823,7 +1814,7 @@ def stringToDateTime(s, tzinfo=None, strict=False):
         if len(s) > 15 and s[15] == "Z":
             tzinfo = getTzid("UTC")
     except TypeError:
-        raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s))
+        raise ParseError(f"'{s}' is not a valid DATE-TIME")
     year = year or 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # Cater for pytz tzinfo instanes
         return tzinfo.localize(datetime.datetime(year, month, day, hour, minute, second))
@@ -1900,7 +1891,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
 
         else:
             state = "error"
-            error("unknown state: '{0!s}' reached in {1!s}".format(state, s))
+            error("unknown state: '{state}' reached in {s}")
 
 
 def stringToDurations(s, strict=False):
@@ -1961,7 +1952,7 @@ def stringToDurations(s, strict=False):
                 current = current + char  # update this part when updating "read field"
             else:
                 state = "error"
-                error("got unexpected character {0} reading in duration: {1}".format(char, s))
+                error("got unexpected character {char} reading in duration: {s}")
 
         elif state == "read field":
             if char in string.digits:
@@ -2016,7 +2007,7 @@ def stringToDurations(s, strict=False):
 
         else:
             state = "error"
-            error("unknown state: '{0!s}' reached in {1!s}".format(state, s))
+            error("unknown state: '{state}' reached in {s}")
 
 
 def parseDtstart(contentline, allowSignatureMismatch=False):

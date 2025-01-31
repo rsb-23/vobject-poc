@@ -29,7 +29,6 @@ disable=
 	unspecified-encoding,
 	unused-argument,
 	# C
-	consider-using-f-string,
 	import-outside-toplevel,
 	invalid-name,
 	missing-docstring,

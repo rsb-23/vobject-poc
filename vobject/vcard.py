@@ -35,7 +35,7 @@ class Name:
         return str_(out)
 
     def __repr__(self):
-        return "<Name: {0!s}>".format(self.__str__())
+        return f"<Name: {self}>"
 
     def __eq__(self, other):
         try:
@@ -78,13 +78,13 @@ class Address:
     def __str__(self):
         lines = "\n".join(self.toString(getattr(self, val)) for val in self.lines if getattr(self, val))
         one_line = tuple(self.toString(getattr(self, val), " ") for val in self.one_line)
-        lines += "\n{0!s}, {1!s} {2!s}".format(*one_line)
+        lines += f"\n{one_line[0]}, {one_line[1]} {one_line[2]}"
         if self.country:
             lines += "\n" + self.toString(self.country)
         return lines
 
     def __repr__(self):
-        return "<Address: {0!s}>".format(self)
+        return "<Address: {self}>"
 
     def __eq__(self, other):
         try:
@@ -234,7 +234,7 @@ class Photo(VCardTextBehavior):
 
     @classmethod
     def valueRepr(cls, line):
-        return " (BINARY PHOTO DATA at 0x{0!s}) ".format(id(line.value))
+        return f" (BINARY PHOTO DATA at 0x{id(line.value)}) "
 
     @classmethod
     def serialize(cls, obj, buf, lineLength, validate, *args, **kwargs):
