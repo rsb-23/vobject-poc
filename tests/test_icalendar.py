@@ -285,16 +285,9 @@ def test_regexes():
     assert re.findall(vobject.base.P_NAME, "12foo-bar:yay") == ["12foo-bar", "yay"]
     assert re.findall(vobject.base.P_SAFE_CHAR, 'a;b"*,cd') == ["a", "b", "*", "c", "d"]
     assert re.findall(vobject.base.P_QSAFE_CHAR, 'a;b"*,cd') == ["a", ";", "b", "*", ",", "c", "d"]
-    assert re.findall(vobject.base.P_PARAM_VALUE, '"quoted";not-quoted;start"after-illegal-quote', re.VERBOSE) == [
-        '"quoted"',
-        "",
-        "not-quoted",
-        "",
-        "start",
-        "",
-        "after-illegal-quote",
-        "",
-    ]
+    assert re.findall(
+        vobject.base.P_PARAM_VALUE, '"quoted";not-quoted;start"after-illegal-quote', re.VERBOSE  # black hack
+    ) == ['"quoted"', "", "not-quoted", "", "start", "", "after-illegal-quote", ""]
 
     match = vobject.base.line_re.match('TEST;ALTREP="http://www.wiz.org":value:;"')
     assert match.group("value") == 'value:;"'
