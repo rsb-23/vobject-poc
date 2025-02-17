@@ -6,38 +6,40 @@ from argparse import ArgumentParser
 
 import vobject
 
+from .compatibility import deprecated
 
-def getSortKey(component):
-    def getUID(component):
+
+def get_sort_key(component):
+    def get_uid(component):
         return component.getChildValue("uid", "")
 
     # it's not quite as simple as getUID, need to account for recurrenceID and sequence
 
-    def getSequence(component) -> str:
+    def get_sequence(component) -> str:
         sequence = component.getChildValue("sequence", 0)
         return f"{int(sequence):05d}"
 
-    def getRecurrenceID(component):
+    def get_recurrence_id(component):
         recurrence_id = component.getChildValue("recurrence_id", None)
         if recurrence_id is None:
             return "0000-00-00"
         else:
             return recurrence_id.isoformat()
 
-    return getUID(component) + getSequence(component) + getRecurrenceID(component)
+    return get_uid(component) + get_sequence(component) + get_recurrence_id(component)
 
 
-def sortByUID(components):
-    return sorted(components, key=getSortKey)
+def sort_by_uid(components):
+    return sorted(components, key=get_sort_key)
 
 
-def deleteExtraneous(component, ignore_dtstamp=False):
+def delete_extraneous(component, ignore_dtstamp=False):
     """
     Recursively walk the component's children, deleting extraneous details like
     X-VOBJ-ORIGINAL-TZID.
     """
     for comp in component.components():
-        deleteExtraneous(comp, ignore_dtstamp)
+        delete_extraneous(comp, ignore_dtstamp)
     for line in component.lines():
         if "X-VOBJ-ORIGINAL-TZID" in line.params:
             del line.params["X-VOBJ-ORIGINAL-TZID"]
@@ -59,38 +61,38 @@ def diff(left, right):
 
     """
 
-    def processComponentLists(leftList, rightList):
+    def process_component_lists(left_list, right_list):
         output = []
-        rightIndex = 0
-        rightListSize = len(rightList)
+        right_index = 0
+        right_list_size = len(right_list)
 
-        for comp in leftList:
-            if rightIndex >= rightListSize:
+        for comp in left_list:
+            if right_index >= right_list_size:
                 output.append((comp, None))
             else:
-                leftKey = getSortKey(comp)
-                rightComp = rightList[rightIndex]
-                rightKey = getSortKey(rightComp)
-                while leftKey > rightKey:
-                    output.append((None, rightComp))
-                    rightIndex += 1
-                    if rightIndex >= rightListSize:
+                left_key = get_sort_key(comp)
+                right_comp = right_list[right_index]
+                right_key = get_sort_key(right_comp)
+                while left_key > right_key:
+                    output.append((None, right_comp))
+                    right_index += 1
+                    if right_index >= right_list_size:
                         output.append((comp, None))
                         break
-                    rightComp = rightList[rightIndex]
-                    rightKey = getSortKey(rightComp)
+                    right_comp = right_list[right_index]
+                    right_key = get_sort_key(right_comp)
 
-                if leftKey < rightKey:
+                if left_key < right_key:
                     output.append((comp, None))
-                elif leftKey == rightKey:
-                    rightIndex += 1
-                    matchResult = processComponentPair(comp, rightComp)
-                    if matchResult is not None:
-                        output.append(matchResult)
+                elif left_key == right_key:
+                    right_index += 1
+                    match_result = process_component_pair(comp, right_comp)
+                    if match_result is not None:
+                        output.append(match_result)
 
         return output
 
-    def newComponent(name, body):  # pylint:disable=unused-variable
+    def new_component(name, body):  # pylint:disable=unused-variable
         if body is None:
             return None
         c = vobject.base.Component(name)
@@ -98,79 +100,79 @@ def diff(left, right):
         c.isNative = True
         return c
 
-    def processComponentPair(leftComp, rightComp):
+    def process_component_pair(left_comp, right_comp):
         """
         Return None if a match, or a pair of components including UIDs and
         any differing children.
 
         """
-        leftChildKeys = leftComp.contents.keys()
-        rightChildKeys = rightComp.contents.keys()
+        left_child_keys = left_comp.contents.keys()
+        right_child_keys = right_comp.contents.keys()
 
-        differentContentLines = []
-        differentComponents = {}
+        different_content_lines = []
+        different_components = {}
 
-        for key in leftChildKeys:
-            rightList = rightComp.contents.get(key, [])
-            if isinstance(leftComp.contents[key][0], vobject.base.Component):
-                compDifference = processComponentLists(leftComp.contents[key], rightList)
-                if len(compDifference) > 0:
-                    differentComponents[key] = compDifference
+        for key in left_child_keys:
+            right_list = right_comp.contents.get(key, [])
+            if isinstance(left_comp.contents[key][0], vobject.base.Component):
+                comp_difference = process_component_lists(left_comp.contents[key], right_list)
+                if len(comp_difference) > 0:
+                    different_components[key] = comp_difference
 
-            elif leftComp.contents[key] != rightList:
-                differentContentLines.append((leftComp.contents[key], rightList))
+            elif left_comp.contents[key] != right_list:
+                different_content_lines.append((left_comp.contents[key], right_list))
 
-        for key in rightChildKeys:
-            if key not in leftChildKeys:
-                if isinstance(rightComp.contents[key][0], vobject.base.Component):
-                    differentComponents[key] = ([], rightComp.contents[key])
+        for key in right_child_keys:
+            if key not in left_child_keys:
+                if isinstance(right_comp.contents[key][0], vobject.base.Component):
+                    different_components[key] = ([], right_comp.contents[key])
                 else:
-                    differentContentLines.append(([], rightComp.contents[key]))
+                    different_content_lines.append(([], right_comp.contents[key]))
 
-        if not differentContentLines and not differentComponents:
+        if not different_content_lines and not different_components:
             return None
 
-        left = vobject.newFromBehavior(leftComp.name)
-        right = vobject.newFromBehavior(leftComp.name)
+        left = vobject.newFromBehavior(left_comp.name)
+        right = vobject.newFromBehavior(left_comp.name)
         # add a UID, if one existed, despite the fact that they'll always be
         # the same
-        uid = leftComp.getChildValue("uid")
+        uid = left_comp.getChildValue("uid")
         if uid is not None:
             left.add("uid").value = uid
             right.add("uid").value = uid
 
-        for name, childPairList in differentComponents.items():
-            leftComponents, rightComponents = zip(*childPairList)
-            if len(leftComponents) > 0:
+        for name, child_pair_list in different_components.items():
+            left_components, right_components = zip(*child_pair_list)
+            if len(left_components) > 0:
                 # filter out None
-                left.contents[name] = filter(None, leftComponents)
-            if len(rightComponents) > 0:
+                left.contents[name] = filter(None, left_components)
+            if len(right_components) > 0:
                 # filter out None
-                right.contents[name] = filter(None, rightComponents)
+                right.contents[name] = filter(None, right_components)
 
-        for leftChildLine, rightChildLine in differentContentLines:
-            nonEmpty = leftChildLine or rightChildLine
+        for left_child_line, right_child_line in different_content_lines:
+            nonEmpty = left_child_line or right_child_line
             name = nonEmpty[0].name
-            if leftChildLine is not None:
-                left.contents[name] = leftChildLine
-            if rightChildLine is not None:
-                right.contents[name] = rightChildLine
+            if left_child_line is not None:
+                left.contents[name] = left_child_line
+            if right_child_line is not None:
+                right.contents[name] = right_child_line
 
         return left, right
 
-    vevents = processComponentLists(
-        sortByUID(getattr(left, "vevent_list", [])), sortByUID(getattr(right, "vevent_list", []))
+    vevents = process_component_lists(
+        sort_by_uid(getattr(left, "vevent_list", [])), sort_by_uid(getattr(right, "vevent_list", []))
     )
 
-    vtodos = processComponentLists(
-        sortByUID(getattr(left, "vtodo_list", [])), sortByUID(getattr(right, "vtodo_list", []))
+    vtodos = process_component_lists(
+        sort_by_uid(getattr(left, "vtodo_list", [])), sort_by_uid(getattr(right, "vtodo_list", []))
     )
 
     return vevents + vtodos
 
 
-def prettyDiff(leftObj, rightObj):
-    for left, right in diff(leftObj, rightObj):
+def pretty_diff(left_obj, right_obj):
+    for left, right in diff(left_obj, right_obj):
         print("<<<<<<<<<<<<<<<")
         if left is not None:
             left.prettyPrint()
@@ -185,9 +187,9 @@ def main():
     with open(args.ics_file1) as f, open(args.ics_file2) as g:
         cal1 = vobject.readOne(f)
         cal2 = vobject.readOne(g)
-    deleteExtraneous(cal1, ignore_dtstamp=args.ignore)
-    deleteExtraneous(cal2, ignore_dtstamp=args.ignore)
-    prettyDiff(cal1, cal2)
+    delete_extraneous(cal1, ignore_dtstamp=args.ignore)
+    delete_extraneous(cal2, ignore_dtstamp=args.ignore)
+    pretty_diff(cal1, cal2)
 
 
 def get_arguments():
@@ -206,6 +208,26 @@ def get_arguments():
     parser.add_argument("ics_file2", help="The second ics file to compare")
 
     return parser.parse_args()
+
+
+@deprecated
+def getSortKey(component):
+    return get_sort_key(component)
+
+
+@deprecated
+def sortByUID(components):
+    return sort_by_uid(components)
+
+
+@deprecated
+def deleteExtraneous(component, ignore_dtstamp=False):
+    return delete_extraneous(component, ignore_dtstamp)
+
+
+@deprecated
+def prettyDiff(leftObj, rightObj):
+    return pretty_diff(leftObj, rightObj)
 
 
 if __name__ == "__main__":
